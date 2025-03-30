@@ -4,7 +4,6 @@
 #include <cassert>
 #include <random>
 
-
 using namespace std;
 
 typedef uint64_t u64;
@@ -199,31 +198,34 @@ void executeRounds(const u64&           nGenerals,
     }
 }
 
-int main()
-{
-    u64 nGenerals;
+void getInputs(u64& nGenerals, u64& nTraitors) {
+    cout << "Enter number of generals: ";
     cin >> nGenerals;
 
-    u64 nTraitors;
+    cout << "Enter number of traitors: ";
     cin >> nTraitors;
 
     assert(nGenerals != 0 && nTraitors != 0 && nGenerals > (3 * nTraitors));
+}
 
-    vector<bool> roles(nGenerals, faithful);
+int main()
+{
+    u64 nGenerals;
+    u64 nTraitors;
+    getInputs(nGenerals, nTraitors);
+
     u64 commanderID;
+    vector<bool> roles(nGenerals, faithful);
     assignRoles(nGenerals, nTraitors, commanderID, roles);
-
     debugSetup(nGenerals, nTraitors, commanderID, roles);
 
     vector<u64> totalAttackMessages   = vector<u64>(nGenerals, 0);
     vector<u64> totalRetreatMessages  = vector<u64>(nGenerals, 0);
-
     sendInitialOrders(commanderID,
                       nGenerals,
                       totalAttackMessages,
                       totalRetreatMessages,
                       roles);
-
     debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
 
     executeRounds(nGenerals,
@@ -232,7 +234,6 @@ int main()
                   totalAttackMessages,
                   totalRetreatMessages,
                   roles);
-
     debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
 
     return 0;
