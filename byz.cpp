@@ -151,14 +151,18 @@ void executeRound(const u64&           nGenerals,
     }
 }
 
-void consolidateMessages(const u64&     nGenerals,
-                         vector<u64>&   totalAttackMessages,
-                         vector<u64>&   totalRetreatMessages,
+void consolidateMessages(const u64&           round,
+                         const u64&           commanderID,
+                         const u64&           nGenerals,
+                         vector<u64>&         totalAttackMessages,
+                         vector<u64>&         totalRetreatMessages,
                          const vector<u64>&   thisRoundAttackMessages,
                          const vector<u64>&   thisRoundRetreatMessages)
 {
     for (u64 i = 0; i < nGenerals; i++)
     {
+        if (i == commanderID) continue;
+        assert(thisRoundAttackMessages[i] + thisRoundRetreatMessages[i] == (pow(nGenerals - 2, round)));
         totalAttackMessages[i]  += thisRoundAttackMessages[i];
         totalRetreatMessages[i] += thisRoundRetreatMessages[i];
     }
@@ -181,13 +185,15 @@ void executeRounds(const u64&           nGenerals,
 
         executeRound(nGenerals,
                      commanderID,
-                     totalAttackMessages,
-                     totalRetreatMessages,
+                     prevRoundAttackMessages,
+                     prevRoundRetreatMessages,
                      thisRoundAttackMessages,
                      thisRoundRetreatMessages,
                      roles);
 
-        consolidateMessages(nGenerals,
+        consolidateMessages(round,
+                            commanderID,
+                            nGenerals,
                             totalAttackMessages,
                             totalRetreatMessages,
                             thisRoundAttackMessages,
