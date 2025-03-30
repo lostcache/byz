@@ -3,10 +3,12 @@
 #include <vector>
 #include <cassert>
 #include <random>
+#include <algorithm>
 
 using namespace std;
 
 typedef uint64_t u64;
+typedef double f64;
 
 const bool attack   = true;
 const bool faithful = true;
@@ -214,6 +216,62 @@ void getInputs(u64& nGenerals, u64& nTraitors) {
     assert(nGenerals != 0 && nTraitors != 0 && nGenerals > (3 * nTraitors));
 }
 
+bool getFinalDecision(u64&               commanderID,
+                      const vector<u64>& totalAttackMessages,
+                      const vector<u64>& totalRetreatMessages)
+{
+    bool finalDecisionIsAttack = all_of(totalAttackMessages.begin(),
+                                        totalAttackMessages.end(),
+                                        [&](const u64& attackMessageCount)
+                                        {
+                                            size_t index = &attackMessageCount - &totalAttackMessages[0];
+                                            if (index == commanderID) return true;
+                                            return totalAttackMessages[index] > totalRetreatMessages[index];
+                                        });
+
+    bool finalDecisionIsRetreat = all_of(totalRetreatMessages.begin(),
+                                         totalRetreatMessages.end(),
+                                         [&](const u64& retreatMessageCount)
+                                         {
+                                             size_t index = &retreatMessageCount - &totalRetreatMessages[0];
+                                             if (index == commanderID) return true;
+                                             return totalRetreatMessages[index] > totalAttackMessages[index];
+                                         });
+
+    assert(finalDecisionIsRetreat || finalDecisionIsAttack);
+
+    if (finalDecisionIsAttack)
+        return attack;
+    else
+        return retreat;
+}
+
+void calculateMajorityMessageRatio(bool                finalDecision,
+                                   const u64&          commanderID,
+                                   const u64&          nGenerals,
+                                   const vector<u64>&  totalAttackMessagesArr,
+                                   const vector<u64>&  totalRetreatMessagesArr)
+{
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (i == commanderID)
+        {
+            cout << "-" << endl;
+            continue;
+        }
+
+        f64 totalAttackMessages = totalAttackMessagesArr[i];
+        f64 totalRetreatMessages = totalRetreatMessagesArr[i];
+        f64 totalMessages = totalAttackMessages + totalRetreatMessages;
+
+        finalDecision == attack ?
+            cout << (totalAttackMessages / totalMessages) << ", " :
+            cout << (totalRetreatMessages / totalMessages) << ", ";
+    }
+
+    cout << endl;
+}
+
 int main()
 {
     u64 nGenerals;
@@ -241,6 +299,14 @@ int main()
                   totalRetreatMessages,
                   roles);
     debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
+
+    bool finalDecision = getFinalDecision(commanderID, totalAttackMessages, totalRetreatMessages);
+
+    calculateMajorityMessageRatio(finalDecision,
+                                  commanderID,
+                                  nGenerals,
+                                  totalAttackMessages,
+                                  totalRetreatMessages);
 
     return 0;
 }
