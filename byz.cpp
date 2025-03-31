@@ -27,6 +27,9 @@ const bool faithful = true;
 const bool retreat = false;
 const bool traitor = false;
 
+random_device rd;
+mt19937 gen(rd());
+
 /**
  * @brief Outputs debug information about the simulation setup
  * 
@@ -83,8 +86,6 @@ void debugMessages(const u64&    nGenerals,
  */
 bool flipCoin()
 {
-    random_device rd;
-    mt19937 gen(rd());
     uniform_int_distribution<u64> dis(0, 1);
     return dis(gen);
 }
@@ -102,8 +103,6 @@ void assignRoles(const u64&     nGenerals,
                  u64&           commanderID,
                  vector<bool>&  roles)
 {
-    random_device rd;
-    mt19937 gen(rd());
     uniform_int_distribution<u64> dis(0, nGenerals - 1);
     commanderID = dis(gen);
 
