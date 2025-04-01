@@ -351,18 +351,18 @@ bool getFinalDecision(u64&               commanderID,
 {
     bool finalDecisionIsAttack = all_of(totalAttackMessages.begin(),
                                         totalAttackMessages.end(),
-                                        [&](const u64& attackMessageCount)
+                                        [&](const u64& attackMsg)
                                         {
-                                            size_t index = &attackMessageCount - &totalAttackMessages[0];
+                                            size_t index = &attackMsg - &totalAttackMessages[0];
                                             if (index == commanderID) return true;
                                             return totalAttackMessages[index] > totalRetreatMessages[index];
                                         });
 
     bool finalDecisionIsRetreat = all_of(totalRetreatMessages.begin(),
                                          totalRetreatMessages.end(),
-                                         [&](const u64& retreatMessageCount)
+                                         [&](const u64& retreatMsg)
                                          {
-                                             size_t index = &retreatMessageCount - &totalRetreatMessages[0];
+                                             size_t index = &retreatMsg - &totalRetreatMessages[0];
                                              if (index == commanderID) return true;
                                              return totalRetreatMessages[index] > totalAttackMessages[index];
                                          });
