@@ -64,7 +64,6 @@ void debugMessages(const u64&    nGenerals,
                    vector<u64>&  totalRetreatMessages)
 {
 
-    cout << "Initial Orders" << endl;
     cout << "attack messages: ";
     for (u64 i = 0; i < nGenerals; i++)
         cout << totalAttackMessages[i] << ", ";
@@ -393,6 +392,7 @@ void calculateMajorityMessageRatio(bool                finalDecision,
                                    const vector<u64>&  totalAttackMessagesArr,
                                    const vector<u64>&  totalRetreatMessagesArr)
 {
+    cout << "Majority Ratio" << endl;
     for (u64 i = 0; i < nGenerals; i++)
     {
         if (i == commanderID)
@@ -439,6 +439,7 @@ int main()
                       totalAttackMessages,
                       totalRetreatMessages,
                       roles);
+    cout << "Initial Orders:" << endl;
     debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
 
     executeRounds(nGenerals,
@@ -447,6 +448,7 @@ int main()
                   totalAttackMessages,
                   totalRetreatMessages,
                   roles);
+    cout << "Total Messages:" << endl;
     debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
 
     bool finalDecision = getFinalDecision(commanderID, totalAttackMessages, totalRetreatMessages);
