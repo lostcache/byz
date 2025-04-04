@@ -1,106 +1,82 @@
-/**
- * @file byz.cpp
- * @brief Implementation of the Byzantine Generals' Problem solution
- * 
- * This program simulates the Byzantine Generals' Problem, where a group of generals
- * must agree on a common battle plan (attack or retreat) despite some generals being
- * traitors who might relay false information. The implementation follows the algorithm
- * described by Lamport, Shostak, and Pease, where loyal generals follow a consensus
- * protocol to reach agreement.
- */
-
-#include <iostream>
-#include <cstdint>
-#include <vector>
-#include <cassert>
-#include <random>
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <iostream>
+#include <random>
+#include <unordered_set>
+#include <vector>
 
 using namespace std;
 
 typedef uint64_t u64;
-typedef double f64;
 
-const bool attack   = true;
-const bool faithful = true;
+enum class Action
+{
+    ATTACK,
+    RETREAT,
+    _NULL,
+};
 
-const bool retreat = false;
-const bool traitor = false;
+enum class Role
+{
+    FAITHFUL,
+    TRAITOR,
+    _NULL,
+};
 
 random_device rd;
-mt19937 gen(rd());
+mt19937       gen(rd());
 
-/**
- * @brief Outputs debug information about the simulation setup
- * 
- * @param nGenerals Total number of generals in the simulation
- * @param nTraitors Number of traitor generals
- * @param commanderID ID of the commander general
- * @param roles Vector indicating whether each general is faithful or a traitor
- */
-void debugSetup(const u64&     nGenerals,
-                const u64&     nTraitors,
-                const u64&     commanderID,
-                vector<bool>&  roles)
+void debugSetup(const u64    &nGenerals,
+                const u64    &commanderID,
+                vector<Role> &roles)
 {
+    cout << "=============  SETUP  ==============" << endl;
     cout << "commander: " << commanderID << endl;
 
     cout << "roles: ";
     for (u64 i = 0; i < nGenerals; i++)
-        cout << roles[i] << ", ";
+        cout << (roles[i] == Role::FAITHFUL ? "Faithful" : roles[i] == Role::TRAITOR ? "Traitor"
+                                                                                     : "?")
+             << ", ";
 
+    cout << endl;
+    cout << "============  END SETUP  =============" << endl;
     cout << endl;
 }
 
-/**
- * @brief Outputs debug information about messages sent between generals
- * 
- * @param nGenerals Total number of generals in the simulation
- * @param totalAttackMessages Count of "attack" messages received by each general
- * @param totalRetreatMessages Count of "retreat" messages received by each general
- */
-void debugMessages(const u64&    nGenerals,
-                   vector<u64>&  totalAttackMessages,
-                   vector<u64>&  totalRetreatMessages)
+void debugMessages(const vector<vector<Action>> &messages, const u64 &round, const unordered_set<u64> &actingCommanders)
 {
+    cout << "============  MESSAGES  =============" << endl;
+    cout << "round: " << round << endl;
+    for (u64 i = 0; i < messages.size(); i++)
+    {
+        if (actingCommanders.find(i) != actingCommanders.end()) continue;
 
-    cout << "attack messages: ";
-    for (u64 i = 0; i < nGenerals; i++)
-        cout << totalAttackMessages[i] << ", ";
+        for (u64 j = 0; j < messages[i].size(); j++)
+        {
+            if (actingCommanders.find(j) != actingCommanders.end()) continue;
 
+            cout << (messages[i][j] == Action::ATTACK ? "A" : messages[i][j] == Action::RETREAT ? "R"
+                                                                                                : "?")
+                 << ", ";
+        }
+        cout << endl;
+    }
+    cout << "============  END MESSAGES  =============" << endl;
     cout << endl;
-
-    cout << "retreat messages: ";
-    for (u64 i = 0; i < nGenerals; i++)
-        cout << totalRetreatMessages[i] << ", ";
-
-    cout << endl;;
-    cout << "==============" << endl;
 }
 
-/**
- * @brief Generates a random boolean value (true/false)
- * 
- * @return Random boolean (true or false with equal probability)
- */
 bool flipCoin()
 {
     uniform_int_distribution<u64> dis(0, 1);
     return dis(gen);
 }
 
-/**
- * @brief Randomly assigns roles (faithful/traitor) to generals and selects a commander
- * 
- * @param nGenerals Total number of generals
- * @param nTraitors Number of traitors to assign
- * @param commanderID [out] Will contain the ID of the randomly selected commander
- * @param roles [out] Vector that will be populated with role assignments
- */
-void assignRoles(const u64&     nGenerals,
-                 const u64&     nTraitors,
-                 u64&           commanderID,
-                 vector<bool>&  roles)
+void assignRoles(const u64    &nGenerals,
+                 const u64    &nTraitors,
+                 u64          &commanderID,
+                 vector<Role> &roles)
 {
     uniform_int_distribution<u64> dis(0, nGenerals - 1);
     commanderID = dis(gen);
@@ -108,222 +84,61 @@ void assignRoles(const u64&     nGenerals,
     for (u64 i = 0; i < nTraitors; i++)
     {
         u64 newTraitorID = dis(gen);
-        while (roles[newTraitorID] == traitor)
+        while (roles[newTraitorID] == Role::TRAITOR)
             newTraitorID = dis(gen);
 
-        roles[newTraitorID] = traitor;
+        roles[newTraitorID] = Role::TRAITOR;
+    }
+
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (roles[i] == Role::_NULL)
+            roles[i] = Role::FAITHFUL;
     }
 }
 
-/**
- * @brief Simulates the commander sending initial orders to all other generals
- * 
- * If the commander is faithful, they send "attack" to everyone.
- * If the commander is a traitor, they randomly send "attack" or "retreat" to each general.
- * 
- * @param commanderID ID of the commander
- * @param nGenerals Total number of generals
- * @param totalAttackMessages [out] Count of "attack" messages received by each general
- * @param totalRetreatMessages [out] Count of "retreat" messages received by each general
- * @param roles Vector indicating whether each general is faithful or a traitor
- */
-void sendInitialOrders(const u64&     commanderID,
-                       const u64&     nGenerals,
-                       vector<u64>&   totalAttackMessages,
-                       vector<u64>&   totalRetreatMessages,
-                       vector<bool>&  roles)
+void sendGoodOrders(const u64              &nGenerals,
+                    vector<vector<Action>> &initialMessages,
+                    const unordered_set<u64> &actingCommanders)
+{
+    Action intendedAction = flipCoin() ? Action::ATTACK : Action::RETREAT;
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (actingCommanders.find(i) != actingCommanders.end()) continue;
+
+        initialMessages[i][i] = intendedAction;
+    }
+}
+
+void sendRandomOrders(const u64              &nGenerals,
+                      vector<vector<Action>> &initialMessages,
+                      const unordered_set<u64> &actingCommanders)
 {
     for (u64 i = 0; i < nGenerals; i++)
     {
-        if (i == commanderID) continue;
+        if (actingCommanders.find(i) != actingCommanders.end()) continue;
 
-        if (roles[commanderID] == traitor)
-            flipCoin() ? totalAttackMessages[i]++ : totalRetreatMessages[i]++;
-        else
-            totalAttackMessages[i]++;
+        initialMessages[i][i] = flipCoin() ? Action::ATTACK : Action::RETREAT;
     }
 }
 
-/**
- * @brief Simulates a traitor general relaying random messages (attack/retreat)
- * 
- * @param sender ID of the sending general
- * @param receiver ID of the receiving general
- * @param prevRoundAttackMessages Count of "attack" messages from previous round
- * @param prevRoundRetreatMessages Count of "retreat" messages from previous round
- * @param thisRoundAttackMessages [out] "Attack" messages to be updated for current round
- * @param thisRoundRetreatMessages [out] "Retreat" messages to be updated for current round
- */
-void relayRandomMessages(const u64&           sender,
-                         const u64&           receiver,
-                         const vector<u64>&   prevRoundAttackMessages,
-                         const vector<u64>&   prevRoundRetreatMessages,
-                         vector<u64>&         thisRoundAttackMessages,
-                         vector<u64>&         thisRoundRetreatMessages)
+void sendInitialOrders(const u64              &nGenerals,
+                       vector<vector<Action>> &initialMessages,
+                       const Role             &commanderRole,
+                       unordered_set<u64>     &actingCommanders)
 {
-    u64 prevRoundMessageCount = prevRoundAttackMessages[sender] + prevRoundRetreatMessages[sender];
-    for (u64 i = 0; i < prevRoundMessageCount; i++)
-        flipCoin() ? thisRoundAttackMessages[receiver]++ : thisRoundRetreatMessages[receiver]++;
-
+    if (commanderRole == Role::FAITHFUL)
+        sendGoodOrders(nGenerals,
+                       initialMessages,
+                       actingCommanders);
+    else
+        sendRandomOrders(nGenerals,
+                         initialMessages,
+                         actingCommanders);
 }
 
-/**
- * @brief Simulates a faithful general relaying messages exactly as received
- * 
- * @param sender ID of the sending general
- * @param receiver ID of the receiving general
- * @param prevRoundAttackMessages Count of "attack" messages from previous round
- * @param prevRoundRetreatMessages Count of "retreat" messages from previous round
- * @param thisRoundAttackMessages [out] "Attack" messages to be updated for current round
- * @param thisRoundRetreatMessages [out] "Retreat" messages to be updated for current round
- */
-void relayMessages(const u64&           sender,
-                   const u64&           receiver,
-                   const vector<u64>&   prevRoundAttackMessages,
-                   const vector<u64>&   prevRoundRetreatMessages,
-                   vector<u64>&         thisRoundAttackMessages,
-                   vector<u64>&         thisRoundRetreatMessages)
+void getInputs(u64 &nGenerals, u64 &nTraitors)
 {
-    thisRoundAttackMessages[receiver]  += prevRoundAttackMessages[sender];
-    thisRoundRetreatMessages[receiver] += prevRoundRetreatMessages[sender];
-}
-
-/**
- * @brief Executes a single round of message exchanges between generals
- * 
- * Each general (except the commander) relays their received messages to all other generals
- * (except the commander and themselves). Faithful generals relay messages exactly as received,
- * while traitors relay random messages.
- * 
- * @param nGenerals Total number of generals
- * @param commanderID ID of the commander
- * @param prevRoundAttackMessages Count of "attack" messages from previous round
- * @param prevRoundRetreatMessages Count of "retreat" messages from previous round
- * @param thisRoundAttackMessages [out] "Attack" messages to be updated for current round
- * @param thisRoundRetreatMessages [out] "Retreat" messages to be updated for current round
- * @param roles Vector indicating whether each general is faithful or a traitor
- */
-void executeRound(const u64&           nGenerals,
-                  const u64&           commanderID,
-                  const vector<u64>&   prevRoundAttackMessages,
-                  const vector<u64>&   prevRoundRetreatMessages,
-                  vector<u64>&         thisRoundAttackMessages,
-                  vector<u64>&         thisRoundRetreatMessages,
-                  const vector<bool>&  roles)
-{
-    for (u64 sender = 0; sender < nGenerals; sender++)
-    {
-        if (sender == commanderID) continue;
-
-        for (u64 receiver = 0; receiver < nGenerals; receiver++)
-        {
-            if (receiver == sender || receiver == commanderID) continue;
-
-            if (roles[sender] == traitor)
-                relayRandomMessages(sender,
-                                    receiver,
-                                    prevRoundAttackMessages,
-                                    prevRoundRetreatMessages,
-                                    thisRoundAttackMessages,
-                                    thisRoundRetreatMessages);
-            else
-                relayMessages(sender,
-                              receiver,
-                              prevRoundAttackMessages,
-                              prevRoundRetreatMessages,
-                              thisRoundAttackMessages,
-                              thisRoundRetreatMessages);
-        }
-    }
-}
-
-/**
- * @brief Adds the messages from the current round to the total message counts
- * 
- * @param round Current round number
- * @param commanderID ID of the commander
- * @param nGenerals Total number of generals
- * @param totalAttackMessages [out] Running total of "attack" messages to be updated
- * @param totalRetreatMessages [out] Running total of "retreat" messages to be updated
- * @param thisRoundAttackMessages "Attack" messages from the current round
- * @param thisRoundRetreatMessages "Retreat" messages from the current round
- */
-void consolidateMessages(const u64&           round,
-                         const u64&           commanderID,
-                         const u64&           nGenerals,
-                         vector<u64>&         totalAttackMessages,
-                         vector<u64>&         totalRetreatMessages,
-                         const vector<u64>&   thisRoundAttackMessages,
-                         const vector<u64>&   thisRoundRetreatMessages)
-{
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (i == commanderID) continue;
-        assert(thisRoundAttackMessages[i] + thisRoundRetreatMessages[i] == (pow(nGenerals - 2, round)));
-        totalAttackMessages[i]  += thisRoundAttackMessages[i];
-        totalRetreatMessages[i] += thisRoundRetreatMessages[i];
-    }
-}
-
-/**
- * @brief Executes multiple rounds of message exchanges as required by the algorithm
- * 
- * The Byzantine Generals algorithm requires f+1 rounds where f is the number of traitors.
- * This function orchestrates all rounds of message exchanges.
- * 
- * @param nGenerals Total number of generals
- * @param nTraitors Number of traitor generals
- * @param commanderID ID of the commander
- * @param totalAttackMessages [out] Running total of "attack" messages
- * @param totalRetreatMessages [out] Running total of "retreat" messages
- * @param roles Vector indicating whether each general is faithful or a traitor
- */
-void executeRounds(const u64&           nGenerals,
-                   const u64&           nTraitors,
-                   const u64&           commanderID,
-                   vector<u64>&         totalAttackMessages,
-                   vector<u64>&         totalRetreatMessages,
-                   const vector<bool>&  roles)
-{
-    vector<u64> prevRoundAttackMessages  = totalAttackMessages;
-    vector<u64> prevRoundRetreatMessages = totalRetreatMessages;
-
-    for (u64 round = 1; round < nTraitors + 1; round++)
-    {
-        vector<u64> thisRoundAttackMessages  = vector<u64>(nGenerals, 0);
-        vector<u64> thisRoundRetreatMessages = vector<u64>(nGenerals, 0);
-
-        executeRound(nGenerals,
-                     commanderID,
-                     prevRoundAttackMessages,
-                     prevRoundRetreatMessages,
-                     thisRoundAttackMessages,
-                     thisRoundRetreatMessages,
-                     roles);
-
-        consolidateMessages(round,
-                            commanderID,
-                            nGenerals,
-                            totalAttackMessages,
-                            totalRetreatMessages,
-                            thisRoundAttackMessages,
-                            thisRoundRetreatMessages);
-
-        prevRoundAttackMessages  = thisRoundAttackMessages;
-        prevRoundRetreatMessages = thisRoundRetreatMessages;
-    }
-}
-
-/**
- * @brief Gets user input for the number of generals and traitors
- * 
- * Validates that the number of generals is more than three times the number of traitors,
- * which is a requirement for the Byzantine Generals algorithm to work correctly.
- * 
- * @param nGenerals [out] Will contain the total number of generals
- * @param nTraitors [out] Will contain the number of traitor generals
- */
-void getInputs(u64& nGenerals, u64& nTraitors) {
     cout << "Enter number of generals: ";
     cin >> nGenerals;
 
@@ -333,131 +148,154 @@ void getInputs(u64& nGenerals, u64& nTraitors) {
     assert(nGenerals != 0 && nTraitors != 0 && nGenerals > (3 * nTraitors));
 }
 
-/**
- * @brief Determines the final consensus decision (attack or retreat)
- * 
- * The decision is considered "attack" if all generals received more attack messages
- * than retreat messages. Otherwise, the decision is "retreat".
- * 
- * @param commanderID ID of the commander
- * @param totalAttackMessages Total count of "attack" messages received by each general
- * @param totalRetreatMessages Total count of "retreat" messages received by each general
- * @return true for attack, false for retreat
- */
-bool getFinalDecision(u64&               commanderID,
-                      const vector<u64>& totalAttackMessages,
-                      const vector<u64>& totalRetreatMessages)
+Action getMajority(const vector<vector<Action>> &actions, const u64 &nGenerals)
 {
-    bool finalDecisionIsAttack = all_of(totalAttackMessages.begin(),
-                                        totalAttackMessages.end(),
-                                        [&](const u64& attackMsg)
-                                        {
-                                            size_t index = &attackMsg - &totalAttackMessages[0];
-                                            if (index == commanderID) return true;
-                                            return totalAttackMessages[index] > totalRetreatMessages[index];
-                                        });
+    vector<u64> attackMessages(nGenerals, 0);
+    vector<u64> retreatMessages(nGenerals, 0);
 
-    bool finalDecisionIsRetreat = all_of(totalRetreatMessages.begin(),
-                                         totalRetreatMessages.end(),
-                                         [&](const u64& retreatMsg)
-                                         {
-                                             size_t index = &retreatMsg - &totalRetreatMessages[0];
-                                             if (index == commanderID) return true;
-                                             return totalRetreatMessages[index] > totalAttackMessages[index];
-                                         });
-
-    assert(finalDecisionIsRetreat || finalDecisionIsAttack);
-
-    if (finalDecisionIsAttack)
-        return attack;
-    else
-        return retreat;
-}
-
-/**
- * @brief Calculates and displays the ratio of majority messages for each general
- * 
- * For each general, shows the ratio of messages that match the final decision.
- * This shows how strongly each general's received messages support the consensus.
- * 
- * @param finalDecision The consensus decision (attack or retreat)
- * @param commanderID ID of the commander
- * @param nGenerals Total number of generals
- * @param totalAttackMessagesArr Total "attack" messages received by each general
- * @param totalRetreatMessagesArr Total "retreat" messages received by each general
- */
-void calculateMajorityMessageRatio(bool                finalDecision,
-                                   const u64&          commanderID,
-                                   const u64&          nGenerals,
-                                   const vector<u64>&  totalAttackMessagesArr,
-                                   const vector<u64>&  totalRetreatMessagesArr)
-{
-    cout << "Majority Ratio" << endl;
     for (u64 i = 0; i < nGenerals; i++)
     {
-        if (i == commanderID)
+        for (u64 j = 0; j < nGenerals; j++)
         {
-            cout << "N/A, ";
-            continue;
+            if (actions[i][j] == Action::ATTACK)
+                attackMessages[i]++;
+            else if (actions[i][j] == Action::RETREAT)
+                retreatMessages[i]++;
         }
-
-        f64 totalAttackMessages = totalAttackMessagesArr[i];
-        f64 totalRetreatMessages = totalRetreatMessagesArr[i];
-        f64 totalMessages = totalAttackMessages + totalRetreatMessages;
-
-        finalDecision == attack ?
-            cout << (totalAttackMessages / totalMessages) << ", " :
-            cout << (totalRetreatMessages / totalMessages) << ", ";
     }
 
-    cout << endl;
+    vector<Action> decisions(nGenerals, Action::_NULL);
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (attackMessages[i] > retreatMessages[i])
+            decisions[i] = Action::ATTACK;
+        else
+            decisions[i] = Action::RETREAT;
+    }
+
+    u64 attackCount  = 0;
+    u64 retreatCount = 0;
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (decisions[i] == Action::ATTACK)
+            attackCount++;
+        else if (decisions[i] == Action::RETREAT)
+            retreatCount++;
+    }
+
+    if (attackCount > retreatCount)
+        return Action::ATTACK;
+    else
+        return Action::RETREAT;
 }
 
-/**
- * @brief Main function that orchestrates the Byzantine Generals simulation
- * 
- * Collects inputs, assigns roles, executes the message exchange rounds,
- * determines the final decision, and displays results.
- * 
- * @return 0 on successful completion
- */
+void relayMessages(const u64                    &nGenerals,
+                   const unordered_set<u64>     &actingCommanders,
+                   vector<vector<Action>>       &thisRoundMessages,
+                   const vector<vector<Action>> &prevRoundMessages)
+{
+    cout << "relaying messages" << endl;
+    cout << "prevRoundMessages: " << endl;
+    debugMessages(prevRoundMessages, 2, actingCommanders);
+
+    for (u64 sender = 0; sender < nGenerals; sender++)
+    {
+        if (actingCommanders.find(sender) != actingCommanders.end()) continue;
+
+        for (u64 receiver = 0; receiver < nGenerals; receiver++)
+        {
+            if (actingCommanders.find(receiver) != actingCommanders.end()) continue;
+
+            if (thisRoundMessages[sender][receiver] == Action::_NULL)
+                thisRoundMessages[sender][receiver] = prevRoundMessages[sender][sender];
+        }
+    }
+
+    cout << "thisRoundMessages: " << endl;
+    debugMessages(thisRoundMessages, 2, actingCommanders);
+}
+
+Action executeRounds(u64                     nRounds,
+                     u64                     nGenerals,
+                     vector<Role>           &roles,
+                     unordered_set<u64>     &actingCommanders,
+                     vector<vector<Action>> &initialOrders,
+                     const u64              &actingCommander)
+{
+    if (nRounds == 0)
+    {
+        cout << "Current commander: " << actingCommander << endl;
+        vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+        relayMessages(nGenerals,
+                      actingCommanders,
+                      thisRoundMessages,
+                      initialOrders);
+        return getMajority(thisRoundMessages, nGenerals);
+    }
+
+    vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+    for (u64 actingCommander = 0; actingCommander < nGenerals; actingCommander++)
+    {
+        if (actingCommanders.find(actingCommander) != actingCommanders.end()) continue;
+
+        actingCommanders.insert(actingCommander);
+
+        vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+        sendInitialOrders(nGenerals,
+                         initialOrders,
+                         roles[actingCommander],
+                         actingCommanders);
+
+        const Action agreedAction = executeRounds(nRounds - 1,
+                                                  nGenerals,
+                                                  roles,
+                                                  actingCommanders,
+                                                  initialOrders,
+                                                  actingCommander);
+        thisRoundMessages[actingCommander][actingCommander] = agreedAction;
+
+        actingCommanders.erase(actingCommander);
+    }
+
+    relayMessages(nGenerals,
+                  actingCommanders,
+                  thisRoundMessages,
+                  thisRoundMessages);
+    return getMajority(thisRoundMessages, nGenerals);
+}
+
 int main()
 {
     u64 nGenerals;
     u64 nTraitors;
     getInputs(nGenerals, nTraitors);
 
-    u64 commanderID;
-    vector<bool> roles(nGenerals, faithful);
+    u64 nRounds = nTraitors;
+
+    u64                commanderID;
+    unordered_set<u64> actingCommanders;
+    vector<Role>       roles(nGenerals, Role::_NULL);
+
     assignRoles(nGenerals, nTraitors, commanderID, roles);
-    debugSetup(nGenerals, nTraitors, commanderID, roles);
+    // debugSetup(nGenerals, commanderID, roles);
 
-    vector<u64> totalAttackMessages   = vector<u64>(nGenerals, 0);
-    vector<u64> totalRetreatMessages  = vector<u64>(nGenerals, 0);
-    sendInitialOrders(commanderID,
-                      nGenerals,
-                      totalAttackMessages,
-                      totalRetreatMessages,
-                      roles);
-    cout << "Initial Orders:" << endl;
-    debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
+    const Role             commanderRole = roles[commanderID];
+    vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
 
-    executeRounds(nGenerals,
-                  nTraitors,
-                  commanderID,
-                  totalAttackMessages,
-                  totalRetreatMessages,
-                  roles);
-    cout << "Total Messages:" << endl;
-    debugMessages(nGenerals, totalAttackMessages, totalRetreatMessages);
+    actingCommanders.insert(commanderID);
+    sendInitialOrders(nGenerals,
+                      initialOrders,
+                      commanderRole,
+                      actingCommanders);
+    cout << "initial orders: " << endl;
+    debugMessages(initialOrders, nRounds, actingCommanders);
 
-    bool finalDecision = getFinalDecision(commanderID, totalAttackMessages, totalRetreatMessages);
+    const Action finalDecision = executeRounds(nRounds - 1,
+                                               nGenerals,
+                                               roles,
+                                               actingCommanders,
+                                               initialOrders,
+                                               commanderID);
 
-    calculateMajorityMessageRatio(finalDecision,
-                                  commanderID,
-                                  nGenerals,
-                                  totalAttackMessages,
-                                  totalRetreatMessages);
-
-    return 0;
+    cout << "final decision: " << (finalDecision == Action::ATTACK ? "A" : "R") << endl;
 }
