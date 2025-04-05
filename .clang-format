@@ -18,6 +18,7 @@ PointerAlignment: Right
 DerivePointerAlignment: false
 SortIncludes: true
 CompactNamespaces: true
+BreakBeforeTernaryOperators: true
 BreakBeforeBraces: Allman
 BraceWrapping:
   AfterFunction: true
