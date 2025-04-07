@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include <random>
+#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -27,7 +28,7 @@ random_device                 rd;
 mt19937                       gen(rd());
 uniform_int_distribution<u64> coinFlipDist(0, 1);
 
-void debugSetup(const u64    &nGenerals,
+void printSetup(const u64    &nGenerals,
                 const u64    &commanderID,
                 vector<Role> &roles)
 {
@@ -136,8 +137,9 @@ void sendInitialOrders(const u64              &nGenerals,
                          actingCommanders);
 }
 
-void getInputs(u64 &nGenerals, u64 &nTraitors)
+tuple<u64, u64> getInputs()
 {
+    u64 nGenerals, nTraitors;
     cout << "Enter number of generals: ";
     cin >> nGenerals;
 
@@ -145,9 +147,11 @@ void getInputs(u64 &nGenerals, u64 &nTraitors)
     cin >> nTraitors;
 
     assert(nGenerals != 0 && nTraitors != 0 && nGenerals > (3 * nTraitors));
+
+    return make_tuple(nGenerals, nTraitors);
 }
 
-Action getMajority(const vector<vector<Action>> &actions, const u64 &nGenerals)
+Action getConsensus(const vector<vector<Action>> &actions, const u64 &nGenerals)
 {
     vector<u64> attackMessages(nGenerals, 0);
     vector<u64> retreatMessages(nGenerals, 0);
@@ -253,6 +257,16 @@ void checkMajority(const u64 &commanderId, const u64 &nGenerals, const vector<ve
     cout << "Faithful Decision: " << (faithfulDecision == Action::ATTACK ? "Attack" : "Retreat") << endl;
 }
 
+inline vector<vector<Action>> initMessageGrid(const u64 &nGenerals)
+{
+    return vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+}
+
+inline bool actingAsCommander(const unordered_set<u64> &actingCommanders, const u64 &commanderID)
+{
+    return actingCommanders.find(commanderID) != actingCommanders.end();
+}
+
 Action executeRounds(u64                     nRounds,
                      u64                     nGenerals,
                      u64                     nTraitors,
@@ -263,23 +277,19 @@ Action executeRounds(u64                     nRounds,
 {
     if (nRounds == 0)
     {
-        vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
-        relayMessages(nGenerals,
-                      actingCommanders,
-                      roles,
-                      thisRoundMessages,
-                      initialOrders);
-        return getMajority(thisRoundMessages, nGenerals);
+        vector<vector<Action>> thisRoundMessages = initMessageGrid(nGenerals);
+        relayMessages(nGenerals, actingCommanders, roles, thisRoundMessages, initialOrders);
+        return getConsensus(thisRoundMessages, nGenerals);
     }
 
-    vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+    vector<vector<Action>> thisRoundMessages = initMessageGrid(nGenerals);
     for (u64 actingCommander = 0; actingCommander < nGenerals; actingCommander++)
     {
-        if (actingCommanders.find(actingCommander) != actingCommanders.end()) continue;
+        if (actingAsCommander(actingCommanders, actingCommander)) continue;
 
         actingCommanders.insert(actingCommander);
 
-        vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
+        vector<vector<Action>> initialOrders = initMessageGrid(nGenerals);
         sendInitialOrders(nGenerals, initialOrders, roles[actingCommander], actingCommanders);
 
         const Action agreedAction = executeRounds(nRounds - 1,
@@ -314,40 +324,41 @@ Action executeRounds(u64                     nRounds,
         checkMajority(actingCommander, nGenerals, thisRoundMessages, roles);
     }
 
-    return getMajority(thisRoundMessages, nGenerals);
+    return getConsensus(thisRoundMessages, nGenerals);
 }
 
-int main()
+void byz()
 {
-    u64 nGenerals;
-    u64 nTraitors;
-    getInputs(nGenerals, nTraitors);
+    auto [nGenerals, nTraitors] = getInputs();
 
-    for (u64 i = 0; i < 10000; i++)
+    const u64 iter = 10000;
+    for (u64 i = 0; i < iter; i++)
     {
         cout << endl;
-        cout << endl;
         cout << "=============================== start ===============================" << endl;
+
         u64                commanderID;
         unordered_set<u64> actingCommanders;
         vector<Role>       roles(nGenerals, Role::_NULL);
 
         assignRoles(nGenerals, nTraitors, commanderID, roles);
-        debugSetup(nGenerals, commanderID, roles);
+        printSetup(nGenerals, commanderID, roles);
 
         const Role             commanderRole = roles[commanderID];
         vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
 
         actingCommanders.insert(commanderID);
-        sendInitialOrders(nGenerals,
-                          initialOrders,
-                          commanderRole,
-                          actingCommanders);
+        sendInitialOrders(nGenerals, initialOrders, commanderRole, actingCommanders);
 
         executeRounds(nTraitors - 1, nGenerals, nTraitors, roles, actingCommanders, initialOrders, commanderID);
 
         cout << "================================ end ================================" << endl;
         cout << endl;
-        cout << endl;
     }
+}
+
+int main()
+{
+    byz();
+    return 0;
 }
