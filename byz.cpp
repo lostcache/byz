@@ -158,12 +158,16 @@ Action getConsensus(const vector<vector<Action>> &actions, const u64 &nGenerals)
 
     for (u64 i = 0; i < nGenerals; i++)
     {
+        if (actingAsCommander(actingCommanders, i)) continue;
+
         for (u64 j = 0; j < nGenerals; j++)
         {
-            if (actions[i][j] == Action::ATTACK)
-                attackMessages[i]++;
-            else if (actions[i][j] == Action::RETREAT)
-                retreatMessages[i]++;
+            if (actingAsCommander(actingCommanders, j)) continue;
+
+            if (thisRoundMessageGrid[i][j] == Action::ATTACK)
+                attackMessages[j]++;
+            else if (thisRoundMessageGrid[i][j] == Action::RETREAT)
+                retreatMessages[j]++;
         }
     }
 
