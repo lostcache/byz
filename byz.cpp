@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include <random>
+#include <tuple>
 #include <unordered_set>
 #include <vector>
 
@@ -9,27 +10,72 @@ using namespace std;
 
 typedef uint64_t u64;
 
+random_device                 rd;
+mt19937                       gen(rd());
+uniform_int_distribution<u64> coinFlipDist(0, 1);
+
 enum class Action
 {
     ATTACK,
     RETREAT,
-    _NULL,
+    NONE,
 };
 
 enum class Role
 {
     FAITHFUL,
     TRAITOR,
-    _NULL,
+    NONE,
 };
 
-random_device                 rd;
-mt19937                       gen(rd());
-uniform_int_distribution<u64> coinFlipDist(0, 1);
+inline string toString(Action action)
+{
+    switch (action)
+    {
+        case Action::ATTACK:
+            return "ATTACK";
+            break;
+        case Action::RETREAT:
+            return "RETREAT";
+            break;
+        case Action::NONE:
+            return "NONE";
+            break;
+    }
+}
 
-void debugSetup(const u64    &nGenerals,
-                const u64    &commanderID,
-                vector<Role> &roles)
+void toString(Role role)
+{
+    switch (role)
+    {
+        case Role::FAITHFUL:
+            cout << "FAITHFUL";
+            break;
+        case Role::TRAITOR:
+            cout << "TRAITOR";
+            break;
+        case Role::NONE:
+            cout << "NONE";
+            break;
+    }
+}
+
+inline void printDecision(const vector<Action> &decisions)
+{
+    cout << "..............Decisions.................." << endl;
+    for (auto it = decisions.begin(); it < decisions.end(); it++)
+    {
+        cout << (*it == Action::ATTACK ? "A" : *it == Action::RETREAT ? "R"
+                                                                      : "X");
+        cout << ", ";
+    }
+    cout << endl;
+    cout << "..............Decisions.................." << endl;
+}
+
+inline void printSetup(const u64    &nGenerals,
+                       const u64    &commanderID,
+                       vector<Role> &roles)
 {
     cout << "commander: " << commanderID << endl;
 
@@ -43,21 +89,27 @@ void debugSetup(const u64    &nGenerals,
     cout << endl;
 }
 
-void debugMessages(const vector<vector<Action>> &messages, const unordered_set<u64> &actingCommanders)
+inline void printMessages(const vector<vector<Action>> &messages)
 {
     for (u64 i = 0; i < messages.size(); i++)
     {
-        if (actingCommanders.find(i) != actingCommanders.end()) continue;
-
         for (u64 j = 0; j < messages[i].size(); j++)
         {
-            if (actingCommanders.find(j) != actingCommanders.end()) continue;
-
             cout << (messages[i][j] == Action::ATTACK ? "A" : messages[i][j] == Action::RETREAT ? "R"
                                                                                                 : "?")
                  << ", ";
         }
         cout << endl;
+    }
+    cout << endl;
+}
+
+inline void printActingCommanders(const unordered_set<u64> &actingCommanders)
+{
+    cout << "Acting Commanders: ";
+    for (auto it = actingCommanders.begin(); it != actingCommanders.end(); it++)
+    {
+        cout << *it << ", ";
     }
     cout << endl;
 }
@@ -70,6 +122,11 @@ inline bool flipCoin()
 inline Action getRandomMessage()
 {
     return flipCoin() ? Action::ATTACK : Action::RETREAT;
+}
+
+inline bool isActingCommander(const unordered_set<u64> &actingCommanders, const u64 &commanderID)
+{
+    return actingCommanders.find(commanderID) != actingCommanders.end();
 }
 
 void assignRoles(const u64    &nGenerals,
@@ -91,53 +148,14 @@ void assignRoles(const u64    &nGenerals,
 
     for (u64 i = 0; i < nGenerals; i++)
     {
-        if (roles[i] == Role::_NULL)
+        if (roles[i] == Role::NONE)
             roles[i] = Role::FAITHFUL;
     }
 }
 
-void sendGoodOrders(const u64                &nGenerals,
-                    vector<vector<Action>>   &initialMessages,
-                    const unordered_set<u64> &actingCommanders)
+tuple<u64, u64> getInputs()
 {
-    Action intendedAction = getRandomMessage();
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (actingCommanders.find(i) != actingCommanders.end()) continue;
-
-        initialMessages[i][i] = intendedAction;
-    }
-}
-
-void sendRandomOrders(const u64                &nGenerals,
-                      vector<vector<Action>>   &initialMessages,
-                      const unordered_set<u64> &actingCommanders)
-{
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (actingCommanders.find(i) != actingCommanders.end()) continue;
-
-        initialMessages[i][i] = getRandomMessage();
-    }
-}
-
-void sendInitialOrders(const u64              &nGenerals,
-                       vector<vector<Action>> &initialMessages,
-                       const Role             &commanderRole,
-                       unordered_set<u64>     &actingCommanders)
-{
-    if (commanderRole == Role::FAITHFUL)
-        sendGoodOrders(nGenerals,
-                       initialMessages,
-                       actingCommanders);
-    else
-        sendRandomOrders(nGenerals,
-                         initialMessages,
-                         actingCommanders);
-}
-
-void getInputs(u64 &nGenerals, u64 &nTraitors)
-{
+    u64 nGenerals, nTraitors;
     cout << "Enter number of generals: ";
     cin >> nGenerals;
 
@@ -145,209 +163,196 @@ void getInputs(u64 &nGenerals, u64 &nTraitors)
     cin >> nTraitors;
 
     assert(nGenerals != 0 && nTraitors != 0 && nGenerals > (3 * nTraitors));
+
+    return make_tuple(nGenerals, nTraitors);
 }
 
-Action getMajority(const vector<vector<Action>> &actions, const u64 &nGenerals)
+inline Action getDecisionOfFaithfulGenerals(const u64                &nGenerals,
+                                            const unordered_set<u64> &actingCommanders,
+                                            const vector<Role>       &roles,
+                                            const vector<Action>     &decisions)
+{
+    Action faithfulDecision = Action::NONE;
+    for (u64 j = 0; j < nGenerals; j++)
+    {
+        if (isActingCommander(actingCommanders, j)) continue;
+
+        if (roles[j] == Role::FAITHFUL && faithfulDecision == Action::NONE)
+            faithfulDecision = decisions[j];
+
+        if (roles[j] == Role::FAITHFUL)
+            assert(faithfulDecision == decisions[j]);
+    }
+
+    assert(faithfulDecision != Action::NONE);
+
+    return faithfulDecision;
+}
+
+vector<Action> getMajorityDecisions(const vector<vector<Action>> &thisRoundMessageGrid,
+                                    const u64                    &nGenerals,
+                                    const unordered_set<u64>     &actingCommanders)
 {
     vector<u64> attackMessages(nGenerals, 0);
     vector<u64> retreatMessages(nGenerals, 0);
 
     for (u64 i = 0; i < nGenerals; i++)
     {
+        if (isActingCommander(actingCommanders, i)) continue;
+
         for (u64 j = 0; j < nGenerals; j++)
         {
-            if (actions[i][j] == Action::ATTACK)
-                attackMessages[i]++;
-            else if (actions[i][j] == Action::RETREAT)
-                retreatMessages[i]++;
+            if (isActingCommander(actingCommanders, j)) continue;
+
+            if (thisRoundMessageGrid[i][j] == Action::ATTACK)
+                attackMessages[j]++;
+            else if (thisRoundMessageGrid[i][j] == Action::RETREAT)
+                retreatMessages[j]++;
         }
     }
 
-    vector<Action> decisions(nGenerals, Action::_NULL);
+    vector<Action> decisions(nGenerals, Action::NONE);
     for (u64 i = 0; i < nGenerals; i++)
     {
         if (attackMessages[i] > retreatMessages[i])
             decisions[i] = Action::ATTACK;
-        else
+        else if (retreatMessages[i] > attackMessages[i])
             decisions[i] = Action::RETREAT;
     }
 
-    u64 attackCount  = 0;
-    u64 retreatCount = 0;
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (decisions[i] == Action::ATTACK)
-            attackCount++;
-        else if (decisions[i] == Action::RETREAT)
-            retreatCount++;
-    }
-
-    if (attackCount > retreatCount)
-        return Action::ATTACK;
-    else
-        return Action::RETREAT;
+    return decisions;
 }
 
-void relayMessages(const u64                    &nGenerals,
-                   const unordered_set<u64>     &actingCommanders,
-                   vector<Role>                 &roles,
-                   vector<vector<Action>>       &thisRoundMessages,
-                   const vector<vector<Action>> &initialOrders)
+void relayConsensusToPreviousRound(const u64               nGenerals,
+                                   const u64               actingCommander,
+                                   unordered_set<u64>      actingCommanders,
+                                   const vector<Action>    decisions,
+                                   vector<vector<Action>> &prevRoundMessageGrid)
 {
     for (u64 i = 0; i < nGenerals; i++)
     {
-        const Action senderMessage = initialOrders[i][i];
-        if (actingCommanders.find(i) != actingCommanders.end()) continue;
+        if (isActingCommander(actingCommanders, i)) continue;
+
+        prevRoundMessageGrid[actingCommander][i] = decisions[i];
+    }
+}
+
+void relayMessageToOtherGenerals(const unordered_set<u64> &actingCommanders,
+                                 const vector<Role>       &roles,
+                                 vector<vector<Action>>   &thisRoundMessages,
+                                 const Action              messageFromCommander)
+{
+    const u64 nGenerals = roles.size();
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (isActingCommander(actingCommanders, i)) continue;
 
         for (u64 j = 0; j < nGenerals; j++)
         {
-            if (actingCommanders.find(j) != actingCommanders.end()) continue;
+            if (isActingCommander(actingCommanders, j)) continue;
 
-            if (thisRoundMessages[i][j] == Action::_NULL)
-                thisRoundMessages[i][j] =
-                    roles[i] == Role::FAITHFUL ? senderMessage : getRandomMessage();
+            assert(thisRoundMessages[i][j] == Action::NONE);
+
+            thisRoundMessages[i][j] = roles[i] == Role::FAITHFUL ? messageFromCommander : getRandomMessage();
         }
     }
 }
 
-void checkMajority(const u64 &commanderId, const u64 &nGenerals, const vector<vector<Action>> &messages, const vector<Role> &roles)
+inline vector<vector<Action>> initMessageGrid(const u64 &nGenerals)
 {
-    vector<u64> totalAttackMessages  = vector<u64>(nGenerals, 0);
-    vector<u64> totalRetreatMessages = vector<u64>(nGenerals, 0);
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (i == commanderId) continue;
-
-        for (u64 j = 0; j < nGenerals; j++)
-        {
-            if (messages[i][j] == Action::ATTACK) totalAttackMessages[j] += 1;
-            if (messages[i][j] == Action::RETREAT) totalRetreatMessages[j] += 1;
-        }
-    }
-
-    vector<Action> decisions = vector<Action>(nGenerals, Action::_NULL);
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (totalAttackMessages > totalRetreatMessages)
-            decisions[i] = Action::ATTACK;
-        else
-            decisions[i] = Action::RETREAT;
-    }
-
-    Action faithfulDecision = Action::_NULL;
-    cout << "Decisions: ";
-    for (u64 i = 0; i < nGenerals; i++)
-    {
-        if (i == commanderId) continue;
-
-        if (faithfulDecision == Action::_NULL && roles[i] == Role::FAITHFUL)
-            faithfulDecision = decisions[i];
-
-        if (faithfulDecision != Action::_NULL && roles[i] == Role::FAITHFUL && decisions[i] != faithfulDecision)
-            assert(false);
-
-        cout << (decisions[i] == Action::ATTACK ? "Attack, " : "Retreat, ");
-    }
-    cout << endl;
-
-    cout << "Faithful Decision: " << (faithfulDecision == Action::ATTACK ? "Attack" : "Retreat") << endl;
+    return vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::NONE));
 }
 
-Action executeRounds(u64                     nRounds,
-                     u64                     nGenerals,
-                     u64                     nTraitors,
-                     vector<Role>           &roles,
-                     unordered_set<u64>     &actingCommanders,
-                     vector<vector<Action>> &initialOrders,
-                     const u64              &actingCommander)
+void useDecision(const u64                &commanderId,
+                 const u64                 nGenerals,
+                 const unordered_set<u64> &actingCommanders,
+                 const vector<Action>     &decisions,
+                 vector<vector<Action>>   &messages)
 {
+    for (u64 i = 0; i < nGenerals; i++)
+    {
+        if (isActingCommander(actingCommanders, i)) continue;
+
+        messages[commanderId][i] = decisions[i];
+    }
+}
+
+vector<Action> getConsensus(const u64           nRounds,
+                            const u64           nGenerals,
+                            const vector<Role> &roles,
+                            unordered_set<u64> &actingCommanders,
+                            const Action        messageFromPrevCommander)
+{
+    // cout << "Round: " << nRounds << endl;
+    // cout << "Prev Commander Message: " << toString(messageFromPrevCommander) << endl;
+    // printActingCommanders(actingCommanders);
+    // cout << endl;
+
     if (nRounds == 0)
     {
-        vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
-        relayMessages(nGenerals,
-                      actingCommanders,
-                      roles,
-                      thisRoundMessages,
-                      initialOrders);
-        return getMajority(thisRoundMessages, nGenerals);
+        vector<vector<Action>> thisRoundMessageGrid = initMessageGrid(nGenerals);
+        relayMessageToOtherGenerals(actingCommanders, roles, thisRoundMessageGrid, messageFromPrevCommander);
+        // cout << "Relayed Messages:" << endl;
+        // debugMessages(thisRoundMessageGrid);
+        auto decisions = getMajorityDecisions(thisRoundMessageGrid, nGenerals, actingCommanders);
+        // cout << "Decisions:" << endl;
+        // printDecision(decisions);
+        return decisions;
     }
 
-    vector<vector<Action>> thisRoundMessages = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
-    for (u64 actingCommander = 0; actingCommander < nGenerals; actingCommander++)
+    vector<vector<Action>> thisRoundMessages = initMessageGrid(nGenerals);
+    for (u64 newCommander = 0; newCommander < nGenerals; newCommander++)
     {
-        if (actingCommanders.find(actingCommander) != actingCommanders.end()) continue;
+        if (isActingCommander(actingCommanders, newCommander)) continue;
 
-        actingCommanders.insert(actingCommander);
+        actingCommanders.insert(newCommander);
 
-        vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
-        sendInitialOrders(nGenerals, initialOrders, roles[actingCommander], actingCommanders);
+        const Action   newMessage = roles[newCommander] == Role::FAITHFUL ? messageFromPrevCommander : getRandomMessage();
+        vector<Action> decisions  = getConsensus(nRounds - 1, nGenerals, roles, actingCommanders, newMessage);
+        // cout << "Decisions:" << endl;
+        // printDecision(decisions);
+        useDecision(newCommander, nGenerals, actingCommanders, decisions, thisRoundMessages);
+        // cout << "this round messages after using decisions:" << endl;
+        // debugMessages(thisRoundMessages);
 
-        const Action agreedAction = executeRounds(nRounds - 1,
-                                                  nGenerals,
-                                                  nTraitors,
-                                                  roles,
-                                                  actingCommanders,
-                                                  initialOrders,
-                                                  actingCommander);
-
-        thisRoundMessages[actingCommander][actingCommander] = agreedAction;
-
-        actingCommanders.erase(actingCommander);
+        actingCommanders.erase(newCommander);
     }
 
-    relayMessages(nGenerals,
-                  actingCommanders,
-                  roles,
-                  thisRoundMessages,
-                  thisRoundMessages);
+    return getMajorityDecisions(thisRoundMessages, nGenerals, actingCommanders);
+}
 
-    if (nRounds == nTraitors - 1)
+void byz()
+{
+    auto [nGenerals, nTraitors] = getInputs();
+
+    const u64 iter = 100000;
+    for (u64 i = 0; i < iter; i++)
     {
-        cout << "roles: ";
-        for (u64 i = 0; i < nGenerals; i++)
-        {
-            if (i == actingCommander) continue;
+        u64                commanderID;
+        unordered_set<u64> actingCommanders;
+        vector<Role>       roles(nGenerals, Role::NONE);
+        assignRoles(nGenerals, nTraitors, commanderID, roles);
 
-            cout << (roles[i] == Role::FAITHFUL ? "Faithful" : "Traitor") << ", ";
-        }
-        cout << endl;
-        checkMajority(actingCommander, nGenerals, thisRoundMessages, roles);
+        const Action originalOrder = getRandomMessage();
+
+        // printSetup(nGenerals, commanderID, roles);
+
+        actingCommanders.insert(commanderID);
+
+        const vector<Action> decisions = getConsensus(nTraitors - 1, nGenerals, roles, actingCommanders, originalOrder);
+        // cout << "original order: " << toString(originalOrder) << endl;
+        Action finalDecision = getDecisionOfFaithfulGenerals(nGenerals, actingCommanders, roles, decisions);
+        // cout << "final decision: " << toString(finalDecision) << endl;
+
+        if (roles[commanderID] == Role::FAITHFUL)
+            assert(finalDecision == originalOrder);
+
+        actingCommanders.erase(commanderID);
     }
-
-    return getMajority(thisRoundMessages, nGenerals);
 }
 
 int main()
 {
-    u64 nGenerals;
-    u64 nTraitors;
-    getInputs(nGenerals, nTraitors);
-
-    for (u64 i = 0; i < 10000; i++)
-    {
-        cout << endl;
-        cout << endl;
-        cout << "=============================== start ===============================" << endl;
-        u64                commanderID;
-        unordered_set<u64> actingCommanders;
-        vector<Role>       roles(nGenerals, Role::_NULL);
-
-        assignRoles(nGenerals, nTraitors, commanderID, roles);
-        debugSetup(nGenerals, commanderID, roles);
-
-        const Role             commanderRole = roles[commanderID];
-        vector<vector<Action>> initialOrders = vector<vector<Action>>(nGenerals, vector<Action>(nGenerals, Action::_NULL));
-
-        actingCommanders.insert(commanderID);
-        sendInitialOrders(nGenerals,
-                          initialOrders,
-                          commanderRole,
-                          actingCommanders);
-
-        executeRounds(nTraitors - 1, nGenerals, nTraitors, roles, actingCommanders, initialOrders, commanderID);
-
-        cout << "================================ end ================================" << endl;
-        cout << endl;
-        cout << endl;
-    }
+    byz();
+    return 0;
 }
