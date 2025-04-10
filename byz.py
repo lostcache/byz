@@ -1,9 +1,6 @@
-from typing import Tuple, List, Set
+from typing import Tuple, List, Set, cast
 import random
 from enum import Enum
-from pprint import pprint
-
-width = 160
 
 
 class Role(Enum):
@@ -51,26 +48,27 @@ def init_messages(n_generals: int) -> List[List[Message]]:
     return [[Message.NONE for _ in range(n_generals)] for _ in range(n_generals)]
 
 
-def relay_messages_to_other_generals(
+def exchange_messages(
     acting_commanders: Set[int],
     roles: List[Role],
     this_round_messages: List[List[Message]],
     messages_from_commander: List[Message],
 ) -> None:
     n_generals = len(roles)
-    for i in range(n_generals):
-        if i in acting_commanders:
+    for sender in range(n_generals):
+        if sender in acting_commanders:
             continue
 
-        for j in range(n_generals):
-            if j in acting_commanders:
+        sender_message = messages_from_commander[sender]
+        for receiver in range(n_generals):
+            if receiver in acting_commanders:
                 continue
 
-            assert this_round_messages[i][j] == Message.NONE
+            assert this_round_messages[sender][receiver] == Message.NONE
 
-            this_round_messages[i][j] = (
-                messages_from_commander[i]
-                if roles[i] == Role.FAITHFUL
+            this_round_messages[sender][receiver] = (
+                sender_message
+                if roles[sender] == Role.FAITHFUL
                 else get_random_message()
             )
 
@@ -84,14 +82,19 @@ def get_majority_decisions(
     retreat_messages = [0] * n_generals
 
     for i in range(n_generals):
+        if i in acting_commanders:
+            continue
+
         for j in range(n_generals):
+            if j in acting_commanders:
+                continue
+
             if this_round_messages[i][j] == Message.ATTACK:
                 attack_messages[j] += 1
             elif this_round_messages[i][j] == Message.RETREAT:
                 retreat_messages[j] += 1
 
     majority_decisions = [Message.NONE for _ in range(n_generals)]
-
     for i in range(n_generals):
         if i in acting_commanders:
             continue
@@ -114,11 +117,11 @@ def use_majority_decisions(
     decisions,
     this_round_messages,
 ) -> None:
-    for i in range(n_generals):
-        if i in acting_commanders:
+    for j in range(n_generals):
+        if j in acting_commanders:
             continue
 
-        this_round_messages[new_commander][i] = decisions[i]
+        this_round_messages[new_commander][j] = decisions[j]
 
 
 def get_consensus(
@@ -128,27 +131,17 @@ def get_consensus(
     acting_commanders: Set[int],
     messages_from_commander: List[Message],
 ) -> List[Message]:
-    print("round", n_round)
-    print("acting commander", acting_commanders)
-    print("messages from current commander: ")
-    pprint(messages_from_commander)
-
     if n_round == 0:
         this_round_messages: List[List[Message]] = init_messages(n_generals)
-        relay_messages_to_other_generals(
+        exchange_messages(
             acting_commanders, roles, this_round_messages, messages_from_commander
         )
-        print("messages after relaying: ")
-        pprint(this_round_messages, width=width)
 
-        decisions = get_majority_decisions(
+        decisions: List[Message] = get_majority_decisions(
             this_round_messages,
             n_generals,
             acting_commanders,
         )
-
-        print("decisions: ")
-        pprint(decisions, width=width)
 
         return decisions
 
@@ -180,8 +173,6 @@ def get_consensus(
 
         acting_commanders.remove(new_commander)
 
-        print("current round messages before using decisions: ")
-        pprint(this_round_messages, width=width)
         use_majority_decisions(
             new_commander,
             n_generals,
@@ -190,19 +181,11 @@ def get_consensus(
             this_round_messages,
         )
 
-        print("current round messages after using decisions: ")
-        pprint(this_round_messages, width=width)
-
-    print("messages after recursive call: ")
-    pprint(this_round_messages, width=width)
-
     decisions: List[Message] = get_majority_decisions(
         this_round_messages,
         n_generals,
         acting_commanders,
     )
-
-    print("decisions: ", decisions)
 
     return decisions
 
@@ -215,17 +198,15 @@ def get_decision_of_faithful_generals(
 ) -> Message:
     faithful_decision = Message.NONE
 
-    for i in range(n_generals):
-        if i in acting_commanders:
+    for j in range(n_generals):
+        if j in acting_commanders:
             continue
 
-        if roles[i] == Role.FAITHFUL and faithful_decision == Message.NONE:
-            faithful_decision = (
-                Message.ATTACK if decisions[i] == Message.ATTACK else Message.RETREAT
-            )
+        if roles[j] == Role.FAITHFUL and faithful_decision == Message.NONE:
+            faithful_decision = decisions[j]
 
-        if roles[i] == Role.FAITHFUL:
-            assert decisions[i] == faithful_decision
+        if roles[j] == Role.FAITHFUL:
+            assert decisions[j] == faithful_decision
 
     assert faithful_decision != Message.NONE
 
@@ -234,8 +215,8 @@ def get_decision_of_faithful_generals(
 
 def get_messages_based_on_role(
     n_generals: int,
-    role: Role,
-    message_from_prev_commander: Message,
+    curr_commander_role: Role,
+    initial_message: Message,
     acting_commanders: Set[int],
     new_commander: int,
 ) -> List[Message]:
@@ -246,8 +227,8 @@ def get_messages_based_on_role(
             continue
 
         messages[i] = (
-            message_from_prev_commander
-            if (role == Role.FAITHFUL or i == new_commander)
+            initial_message
+            if (curr_commander_role == Role.FAITHFUL or i == new_commander)
             else get_random_message()
         )
 
@@ -255,47 +236,25 @@ def get_messages_based_on_role(
 
 
 def byz() -> None:
-    (n_generals, n_traitors) = get_inputs()
+    (n_generals, n_traitors) = cast(Tuple[int, int], get_inputs())
 
-    # enforce to debug
-    n_generals = 7
-    n_traitors = 2
-
-    iter = 1
+    iter = 10000
     for _ in range(iter):
         acting_commanders = set()
-        (commander_id, roles) = assign_roles(n_generals, n_traitors)
 
-        # enforce to debug
-        commander_id = 0
-        roles = [
-            Role.TRAITOR,
-            Role.TRAITOR,
-            Role.FAITHFUL,
-            Role.FAITHFUL,
-            Role.FAITHFUL,
-            Role.FAITHFUL,
-            Role.FAITHFUL,
-        ]
+        (commander_id, roles) = cast(
+            Tuple[int, List[Role]], assign_roles(n_generals, n_traitors)
+        )
 
-        print("commander: ", commander_id, "role: ", roles[commander_id])
-        print("role: ")
-        pprint(roles)
+        initial_message: Message = get_random_message()
 
-        initial_message = get_random_message()
-        print("initial message", initial_message)
-
-        commander_messages = get_messages_based_on_role(
+        commander_messages: List[Message] = get_messages_based_on_role(
             n_generals,
             roles[commander_id],
             initial_message,
             acting_commanders,
             commander_id,
         )
-
-        print("round: ", n_traitors)
-        print("commander messages: ")
-        pprint(commander_messages, width=width)
 
         acting_commanders.add(commander_id)
 
