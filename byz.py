@@ -6,7 +6,7 @@ from enum import Enum
 class Role(Enum):
     NONE = 0
     TRAITOR = -1
-    FAITHFUL = 1
+    LOYAL = 1
 
 
 class Message(Enum):
@@ -30,7 +30,7 @@ def assign_roles(n_generals: int, n_traitors: int) -> Tuple[int, List[Role]]:
 
     for i in range(n_generals):
         if roles[i] == Role.NONE:
-            roles[i] = Role.FAITHFUL
+            roles[i] = Role.LOYAL
 
     commander_id = random.randint(0, n_generals - 1)
 
@@ -67,9 +67,7 @@ def exchange_messages(
             assert this_round_messages[sender][receiver] == Message.NONE
 
             this_round_messages[sender][receiver] = (
-                sender_message
-                if roles[sender] == Role.FAITHFUL
-                else get_random_message()
+                sender_message if roles[sender] == Role.LOYAL else get_random_message()
             )
 
 
@@ -202,10 +200,10 @@ def get_decision_of_faithful_generals(
         if j in acting_commanders:
             continue
 
-        if roles[j] == Role.FAITHFUL and faithful_decision == Message.NONE:
+        if roles[j] == Role.LOYAL and faithful_decision == Message.NONE:
             faithful_decision = decisions[j]
 
-        if roles[j] == Role.FAITHFUL:
+        if roles[j] == Role.LOYAL:
             assert decisions[j] == faithful_decision
 
     assert faithful_decision != Message.NONE
@@ -228,7 +226,7 @@ def get_messages_based_on_role(
 
         messages[i] = (
             initial_message
-            if (curr_commander_role == Role.FAITHFUL or i == new_commander)
+            if (curr_commander_role == Role.LOYAL or i == new_commander)
             else get_random_message()
         )
 
@@ -270,7 +268,7 @@ def byz() -> None:
             n_generals, acting_commanders, roles, decisions
         )
 
-        if roles[commander_id] == Role.FAITHFUL:
+        if roles[commander_id] == Role.LOYAL:
             assert final_decision == initial_message
 
         acting_commanders.remove(commander_id)
