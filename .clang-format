@@ -1,8 +1,31 @@
 BasedOnStyle: Google
 IndentWidth: 2
-ColumnLimit: 80
+TabWidth: 2
 UseTab: Never
 AllowShortFunctionsOnASingleLine: Empty
+ColumnLimit: 0
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+BinPackArguments: false
+BinPackParameters: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInAngles: false
+PointerAlignment: Right
 DerivePointerAlignment: false
-PointerAlignment: Left
-BreakBeforeBraces: Attach
+SortIncludes: true
+CompactNamespaces: true
+BreakBeforeTernaryOperators: true
+BreakBeforeBraces: Allman
+BraceWrapping:
+  AfterFunction: true
+  AfterClass: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterNamespace: true
+  AfterStruct: true
+  BeforeElse: true
+  BeforeCatch: true
