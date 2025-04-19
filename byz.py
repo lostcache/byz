@@ -236,7 +236,7 @@ def get_messages_based_on_role(
 def byz() -> None:
     (n_generals, n_traitors) = cast(Tuple[int, int], get_inputs())
 
-    iter = 10000
+    iter = 10_000
     for _ in range(iter):
         acting_commanders = set()
 
