@@ -26,23 +26,6 @@ module Message = struct
 end
 
 module Byz = struct
-  let debug_messages messages =
-    Printf.printf "--------------------\n";
-    Array.iter
-      (fun msg_arr ->
-        Array.iter
-          (fun msg -> Printf.printf "%s, " (Message.to_string msg))
-          msg_arr;
-        Printf.printf "\n" )
-      messages;
-    ()
-
-  let debug_act_cmd acting_commanders =
-    Printf.printf "Acting Commanders: ";
-    IntHashtbl.iter (fun key _ -> Printf.printf "%d, " key) acting_commanders;
-    Printf.printf "\n";
-    ()
-
   let get_random_message () =
     match Random.int 2 with
     | 0 -> Message.Attack
@@ -128,29 +111,16 @@ module Byz = struct
 
   let rec get_consensus n_round n_generals roles acting_commanders
       messages_from_commander =
-    debug_act_cmd acting_commanders;
-
-    if n_round = 0 then (
+    if n_round = 0 then
       let this_round_messages =
         exchange_messages acting_commanders roles messages_from_commander
       in
-
-      Printf.printf "Round: %d\n" n_round;
-      Printf.printf "After exchanging messages: \n";
-      debug_messages this_round_messages;
 
       let decisions =
         get_majority_decisions this_round_messages n_generals acting_commanders
       in
 
-      Printf.printf "Decisions: ";
-      Array.iter
-        (fun msg -> Printf.printf "%s, " (Message.to_string msg))
-        decisions;
-      Printf.printf "\n";
-      Printf.printf "--------------------\n";
-
-      decisions )
+      decisions
     else
       let this_round_messages = init_messages n_generals in
       for new_commander = 0 to n_generals - 1 do
@@ -176,35 +146,17 @@ module Byz = struct
           IntHashtbl.remove acting_commanders new_commander;
 
           use_majority_decisions new_commander n_generals acting_commanders
-            decisions this_round_messages;
-          Printf.printf "After using decision: \n";
-          debug_messages this_round_messages
+            decisions this_round_messages
       done;
-
-      Printf.printf "Round: %d\n" n_round;
-      Printf.printf "Finally: \n";
-      debug_messages this_round_messages;
 
       let decisions =
         get_majority_decisions this_round_messages n_generals acting_commanders
       in
 
-      Printf.printf "Decisions: ";
-      Array.iter
-        (fun msg -> Printf.printf "%s, " (Message.to_string msg))
-        decisions;
-      Printf.printf "\n";
-      Printf.printf "--------------------\n";
-
       decisions
 
   let get_decision_of_faithful_generals n_generals acting_commanders roles
       decisions =
-    Printf.printf "final decisions: ";
-    Array.iter
-      (fun msg -> Printf.printf "%s, " (Message.to_string msg))
-      decisions;
-    Printf.printf "\n";
     let faithful_decision = ref Message.None in
     for j = 0 to n_generals - 1 do
       if IntHashtbl.mem acting_commanders j then ()
@@ -216,35 +168,21 @@ module Byz = struct
 
     !faithful_decision
 
-  let byz i n_generals n_traitors =
+  let byz n_generals n_traitors =
     Random.self_init ();
 
     let commander_id = Random.int n_generals in
-    Printf.printf "Commander index: %d\n" commander_id;
 
     let commander_message = get_random_message () in
-    Printf.printf "Commander message: %s\n"
-      (Message.to_string commander_message);
+    Message.to_string commander_message;
 
     let roles = Array.make n_generals Role.Loyal in
     let roles = assign_traitors n_generals n_traitors roles in
-    Printf.printf "Roles: ";
-    Array.iter (fun role -> Printf.printf "%s, " (Role.to_string role)) roles;
-    Printf.printf "\n";
-
-    Printf.printf "Commander role: %s \n" (Role.to_string roles.(commander_id));
-
     let initial_messages =
       get_messages_based_on_role n_generals roles.(commander_id)
         commander_message commander_id
     in
     initial_messages.(commander_id) <- commander_message;
-    Printf.printf "Messages: ";
-    Array.iter
-      (fun message -> Printf.printf "%s, " (Message.to_string message))
-      initial_messages;
-    Printf.printf "\n";
-
     let acting_commanders = IntHashtbl.create n_generals in
 
     IntHashtbl.add acting_commanders commander_id "";
@@ -258,11 +196,8 @@ module Byz = struct
         decisions
     in
 
-    if roles.(commander_id) = Role.Loyal then (
-      Printf.printf "Final Decision: %s \n" (Message.to_string final_decision);
-
-      if final_decision <> commander_message then Printf.printf "%d\n" i;
-      assert (final_decision = commander_message) );
+    if roles.(commander_id) = Role.Loyal then
+      assert (final_decision = commander_message);
 
     IntHashtbl.remove acting_commanders commander_id;
 
@@ -280,10 +215,8 @@ let () =
     else (n_generals, n_traitors)
   in
 
-  let n_generals, n_traitors = get_inputs () in
-  for i = 0 to 999 do
-    Printf.printf "=================\n";
-    Byz.byz i n_generals n_traitors;
-    Printf.printf "=================\n"
+  let n_generals, n_traitors = (7, 2) in
+  for i = 0 to 10_000 do
+    Byz.byz n_generals n_traitors
   done;
   ()
