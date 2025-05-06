@@ -5,3 +5,9 @@ byz
 *.jpg
 *.jpeg
 *.stacks
+
+*.cmi
+*.cmo
+*.cmx
+*.o
+
