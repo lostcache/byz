@@ -1,0 +1,220 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1.5in]{geometry}
+\usepackage{inconsolata}  % Monospace font
+\usepackage{setspace}
+\onehalfspacing  % Increased line spacing
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{minted} % For code snippets; requires -shell-escape
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, shapes.geometric}
+\usepackage[table]{xcolor}
+\usepackage{array, rotating, colortbl, booktabs}
+\usepackage{adjustbox}
+\newcommand{\cmdA}{\ensuremath{\mathsf{A}}} % Command: Attack
+\newcommand{\cmdR}{\ensuremath{\mathsf{R}}} % Command: Retreat
+\newcommand{\loyal}{\ensuremath{\mathcal{L}}}
+\newcommand{\traitor}{\ensuremath{\mathcal{T}}}
+\newcommand{\gen}[1]{\ensuremath{G_{#1}}}
+% --- Definitions for storing and measuring the table and labels ---
+\newsavebox{\mainTableBox}
+\newlength{\mainTableHeight}
+\newlength{\mainTableWidth}
+\newlength{\senderLabelAreaHeight}
+\newlength{\majorityLabelAreaHeight}
+\usepackage{enumitem}
+\usepackage{datetime2}
+
+% Header and Footer - Blog style
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\texttt{\large Byzantine Bytes}}
+\fancyhead[C]{}
+\fancyhead[R]{\texttt{\thepage}}
+\renewcommand{\headrulewidth}{0.5pt}
+\setlength{\headheight}{15pt}
+
+% Metadata
+\title{\texttt{\LARGE Byzantine Generals' Problem: \\[0.3em] \Large Decrypting Leslie Lamports' Solution}}
+% \author{\texttt{\large A Technical Blog Post}}
+% \date{\texttt{\large \today}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\begin{minipage}{0.85\textwidth}
+\texttt{\large This blog explains Leslie Lamport's solution to the Byzantine Generals' problem that uses unsigned messages, providing a step-by-step walkthrough with visual examples.}
+\end{minipage}
+\end{center}
+\vspace{1em}
+
+\section*{\texttt{\Large Motivation}}
+Distributed systems are everywhere in our modern digital infrastructure—from cloud computing to blockchain networks. However, a fundamental challenge in these systems is achieving consensus when some components might be faulty or malicious.
+
+The Byzantine Generals' Problem, introduced by Leslie Lamport, Robert Shostak, and Marshall Pease in 1982, elegantly captures this challenge through a military metaphor. Understanding this problem and its solution is crucial for anyone working with distributed systems, blockchain technology, or fault-tolerant computing.
+
+This blog focuses specifically on the solution using unsigned messages—the most challenging scenario where messages carry no authentication. We'll examine a non-trivial instance with the most adversarial case: where the commander is a traitor and strategically sends conflicting commands to create maximum confusion.
+
+The unsigned message solution is particularly fascinating because it operates under the loosest guarantees. Unlike solutions that rely on cryptographic signatures or other forms of authentication, this approach must achieve consensus through pure logic and majority reasoning, making it both intellectually stimulating and practically relevant.
+\section*{\texttt{\Large Introduction}}
+Imagine a scenario where several Byzantine generals have surrounded an enemy city. They must decide collectively whether to attack or retreat. To succeed, all loyal generals must agree on the same plan of action—either all attack or all retreat. A split decision would be disastrous.
+
+The generals can only communicate through messengers, and some generals might be traitors (including potentially the commanding general) who seek to prevent the loyal generals from reaching agreement. These traitors can:
+\begin{itemize}
+    \item Send different messages to different generals
+    \item Collude with other traitors
+    \item Lie about messages they claim to have received
+\end{itemize}
+
+Our challenge is to design an algorithm that ensures all loyal generals reach the same decision despite these traitors. This is the essence of the Byzantine Generals' Problem.
+
+The solution we'll explore doesn't rely on message signatures or authentication. Instead, it uses a recursive message-passing approach called Oral Message (OM) algorithm that can withstand up to $t$ traitors in a system with at least $3t+1$ generals.
+
+\section*{\texttt{\Large Terminology}}
+Before diving into the solution, let's establish some terminology:
+
+\begin{itemize}
+    \item \textbf{Generals}: The participants in the system, denoted as $G_i$ where $i$ is the general's identifier.
+    \item \textbf{Commander}: The general who initiates the decision process (usually $G_0$).
+    \item \textbf{Lieutenants}: All other generals who must follow the commander's decision.
+    \item \textbf{Loyal ($\mathcal{L}$)}: Generals who follow the algorithm correctly.
+    \item \textbf{Traitors ($\mathcal{T}$)}: Generals who may behave arbitrarily and maliciously.
+    \item \textbf{Commands}: The possible decisions, typically Attack (\textbf{A}) or Retreat (\textbf{R}).
+    \item \textbf{OM($m$)}: The Oral Message algorithm with recursion depth $m$.
+\end{itemize}
+
+The Byzantine Generals' Problem has two key requirements:
+\begin{enumerate}
+    \item \textbf{Agreement}: All loyal generals must agree on the same decision.
+    \item \textbf{Validity}: If the commander is loyal, all loyal generals must follow the commander's order.
+\end{enumerate}
+
+Lamport proved that with oral (unsigned) messages, we need at least $3t+1$ generals to tolerate $t$ traitors, and the algorithm requires $t+1$ rounds of message exchanges.
+
+\section*{\texttt{\Large The Algorithm}}
+The Oral Message algorithm (OM) works recursively:
+
+\textbf{OM(0)}: The commander sends a value to all lieutenants, and each lieutenant uses the value received.
+
+\textbf{OM($m$)}, for $m > 0$:
+\begin{enumerate}
+    \item The commander sends a value to each lieutenant.
+    \item Each lieutenant acts as a commander in the OM($m-1$) algorithm to share the value they received with all other lieutenants.
+    \item Each lieutenant determines the majority value reported for each general and uses that as their final decision.
+\end{enumerate}
+
+The algorithm guarantees correct operation if $n \geq 3t+1$ where $n$ is the total number of generals and $t$ is the maximum number of traitors.
+
+The recursive nature of this algorithm creates a tree of message exchanges that grows exponentially with $m$. For a system with $n$ generals, the message complexity is $O(n^{m+1})$, which makes it practical only for small values of $t$ and thus $m$.
+
+\section*{\texttt{\Large The Problem}}
+Let's examine a specific instance of the Byzantine Generals' Problem:
+
+\begin{itemize}
+    \item \textbf{Total generals}: $N = 7$
+    \item \textbf{Traitors}: $t = 2$
+    \item \textbf{Loyal generals}: $N - t = 5$
+\end{itemize}
+
+In our scenario:
+\begin{itemize}
+    \item Commander $G_0$ is a traitor
+    \item Lieutenant $G_1$ is also a traitor
+    \item Lieutenants $G_2$ through $G_6$ are loyal
+\end{itemize}
+
+This is a particularly challenging case because the commander, who initiates the algorithm, is malicious. The commander's strategy is to create maximum confusion by sending conflicting commands:
+\begin{itemize}
+    \item Commander $G_0$ sends Attack (A) to generals $G_2$, $G_4$, and $G_6$
+    \item Commander $G_0$ sends Retreat (R) to generals $G_1$, $G_3$, and $G_5$
+\end{itemize}
+
+Additionally, the second traitor $G_1$ will also attempt to confuse the loyal generals by inconsistently relaying messages during the second round.
+
+With $t = 2$ traitors, we need at least $3t+1 = 7$ generals, which is exactly what we have. According to the theory, OM(2) should be sufficient to achieve consensus among loyal generals. Let's see how this works in practice.
+
+\section*{\texttt{\Large The Solution}}
+We'll implement the OM(2) algorithm for our scenario with 7 generals and 2 traitors. Since $m = 2$, we'll need two rounds of message exchange.
+
+\subsection*{\texttt{\large Round 1}}
+In the first round, the commander $G_0$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants.
+
+Figure 1 illustrates what happens in Round 1:
+
+\input{round_1_fig}
+
+As shown in the diagram, the traitor commander $G_0$ sends:
+\begin{itemize}
+    \item Retreat (R) to generals $G_1$ (traitor), $G_3$, and $G_5$
+    \item Attack (A) to generals $G_2$, $G_4$, and $G_6$
+\end{itemize}
+
+At this point, each lieutenant only knows what the commander told them directly. The table in Figure 1 represents this initial knowledge state, with each lieutenant recording their received command on the diagonal. Notice how the equal distribution of Attack and Retreat commands creates a deadlock if lieutenants were to make decisions based solely on this first round.
+
+\subsection*{\texttt{\large Round 2}}
+In the second round, each lieutenant acts as a sub-commander and tells all other lieutenants what command they received from the original commander in Round 1.
+
+Figure 2 illustrates the message flow in Round 2:
+
+\input{round_2_fig}
+
+The second traitor $G_1$ (who received "Retreat" from $G_0$) continues the deception by:
+\begin{itemize}
+    \item Telling some lieutenants that it received "Attack" from the commander
+    \item Telling other lieutenants that it received "Retreat" from the commander
+\end{itemize}
+
+Meanwhile, all loyal lieutenants honestly relay the commands they received. After this round, each lieutenant has:
+\begin{itemize}
+    \item Their original command from the commander (from Round 1)
+    \item Reports from all other lieutenants about what they claim to have received
+\end{itemize}
+
+The table in Figure 2 shows what each lieutenant knows after Round 2. Each row represents a sender (a lieutenant sharing what they received from the commander), and each column represents a receiver. The cell values show what message was conveyed.
+
+Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. As shown in the "Majority" row of the table, the consensus among all loyal lieutenants is to "Retreat" (R).
+
+This demonstrates the power of the OM(2) algorithm: despite having a traitor commander and a traitor lieutenant, all loyal lieutenants reach the same conclusion. The Byzantine Generals' Problem is solved for this instance!
+
+
+% \subsection{Code Example}
+%
+% Here's a Python code snippet using the \texttt{minted} package:
+%
+% \begin{minted}[fontsize=\small, bgcolor=gray!10, linenos]{python}
+% def hello_world():
+%     print("Hello, world!")
+% \end{minted}
+
+% \subsection{Including Images}
+%
+% \begin{figure}[h!]
+%     \centering
+%     \includegraphics[width=0.6\textwidth]{example-image}
+%     \caption{Sample image included in the blog post.}
+% \end{figure}
+
+\section*{\texttt{\Large Conclusion}}
+
+The Byzantine Generals' Problem represents one of the fundamental challenges in distributed computing. Through our examination of the Oral Message algorithm (OM), we've seen how it's possible to achieve consensus even in the presence of malicious actors.
+
+Key insights from our exploration:
+
+\begin{itemize}
+    \item With $n$ generals and at most $t$ traitors, consensus requires $n \geq 3t+1$ and $m \geq t$ rounds of communication.
+    \item The recursive nature of the algorithm allows loyal generals to filter out inconsistent information.
+    \item Even with a traitor commander sending contradictory commands, loyal generals can still reach agreement.
+    \item The solution works without requiring any form of message authentication or signatures.
+\end{itemize}
+
+This algorithm laid the foundation for many fault-tolerant distributed systems we rely on today, from cloud databases to blockchain networks. Modern consensus protocols like Practical Byzantine Fault Tolerance (PBFT) and those used in blockchain systems are direct descendants of Lamport's original solution.
+
+Understanding these principles not only helps in designing robust distributed systems but also provides insight into the fundamental limits of what's achievable in the presence of Byzantine failures.
+
+What other distributed consensus challenges are you curious about? Share your thoughts and questions in the comments below!
+
+\end{document}

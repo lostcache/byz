@@ -11,3 +11,6 @@ byz
 *.cmx
 *.o
 
+blog/*
+!blog/*.tex
+!blog/*.pdf
