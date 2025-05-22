@@ -1,0 +1,60 @@
+% TikZ styles for Byzantine Generals figures
+\tikzstyle{general} = [circle, draw, minimum size=0.9cm, font=\small]
+\tikzstyle{messageA} = [-{Stealth[length=2.5mm, width=2mm]}, blue, thick] % Blue for Attack
+\tikzstyle{messageR} = [-{Stealth[length=2.5mm, width=2mm]}, red, thick]  % Red for Retreat
+\tikzstyle{nodeLabel} = [font=\scriptsize, right=1pt]
+
+% Round 1 Figure
+$\gen{0}$ sends its chosen message to all lieutenants.
+\begin{figure}[htb]
+\centering
+\begin{tikzpicture}[scale=1, transform shape]
+    % Commander (now loyal)
+    \node[general, fill=green!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\loyal)$};
+
+    % Lieutenants (two traitors: G1 and G4)
+    \node[general, fill=red!20] (g1) at (-5,0) {$\gen{1}(\traitor)$};
+    \node[general, fill=green!20] (g2) at (-3,0) {$\gen{2}(\loyal)$};
+    \node[general, fill=green!20] (g3) at (-1,0) {$\gen{3}(\loyal)$};
+    \node[general, fill=red!20] (g4) at (1,0) {$\gen{4}(\traitor)$};
+    \node[general, fill=green!20] (g5) at (3,0) {$\gen{5}(\loyal)$};
+    \node[general, fill=green!20] (g6) at (5,0) {$\gen{6}(\loyal)$};
+
+    % Messages from G0 - all the same since commander is loyal
+    \draw[messageA] (g0) -- (g1) node[midway, above, sloped, black]{\cmdA}; % G0 to G1
+    \draw[messageA] (g0) -- (g2) node[midway, above, sloped, black]{\cmdA}; % G0 to G2
+    \draw[messageA] (g0) -- (g3) node[midway, above, sloped, black]{\cmdA}; % G0 to G3
+    \draw[messageA] (g0) -- (g4) node[midway, above, sloped, black]{\cmdA}; % G0 to G4
+    \draw[messageA] (g0) -- (g5) node[midway, above, sloped, black]{\cmdA}; % G0 to G5
+    \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA}; % G0 to G6
+\end{tikzpicture}
+\caption{Round 1: Loyal Commander $\gen{0}$ sends consistent Attack messages to all lieutenants, demonstrating the validity condition of the algorithm.}
+
+\begin{center}
+\vspace{1em} % Add some vertical space
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt} % Adjusted
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & & & \\
+    \hline
+     & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & & \\
+    \hline
+     & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & \\
+    \hline
+     & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & \\
+    \hline
+     & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \\
+    \hline
+     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+\end{tabular}
+\par\vspace{0.3em}
+{\scriptsize
+The grid above shows the initial values $v_i$ that each lieutenant $\gen{i}$ (represented by row and column headers) receives from Commander $\gen{0}$ and stores. Since the commander is loyal, all lieutenants receive the same command (Attack). Each value is placed on the diagonal cell $(\gen{i}, \gen{i})$. Off-diagonal cells are empty, to be filled by messages exchanged between lieutenants in later algorithm phases.
+}
+\end{center}
+
+\end{figure}

@@ -1,0 +1,28 @@
+\begin{center}
+\vspace{1em} % Add some vertical space
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt} % Adjusted
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+    \hline
+    \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+\end{tabular}
+\par\vspace{0.3em}
+{\scriptsize
+After all lieutenants have exchanged their Round 2 messages, each loyal lieutenant can determine the consensus by taking a majority vote of all reported values. Despite the conflicting information sent by the traitor lieutenants $\gen{1}$ and $\gen{4}$, all loyal lieutenants reach the same conclusion: Attack (A), which matches the loyal commander's original order and demonstrates the algorithm's ability to satisfy the validity condition.
+}
+\end{center}

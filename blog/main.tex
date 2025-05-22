@@ -137,32 +137,39 @@ Additionally, the second traitor $G_1$ will also attempt to confuse the loyal ge
 
 With $t = 2$ traitors, we need at least $3t+1 = 7$ generals, which is exactly what we have. According to the theory, OM(2) should be sufficient to achieve consensus among loyal generals. Let's see how this works in practice.
 
-\section*{\texttt{\Large The Solution}}
-We'll implement the OM(2) algorithm for our scenario with 7 generals and 2 traitors. Since $m = 2$, we'll need two rounds of message exchange.
+\section*{\texttt{\Large The Algorithm in Play}}
 
 \subsection*{\texttt{\large Round 1}}
-In the first round, the commander $G_0$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants.
+In the first round, the commander $\gen{0}$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants.
 
 Figure 1 illustrates what happens in Round 1:
 
-\input{round_1_fig}
+\input{traitor_commander_round_1_fig}
 
-As shown in the diagram, the traitor commander $G_0$ sends:
+As shown in the diagram, the traitor commander $\gen{0}$ sends:
 \begin{itemize}
-    \item Retreat (R) to generals $G_1$ (traitor), $G_3$, and $G_5$
-    \item Attack (A) to generals $G_2$, $G_4$, and $G_6$
+    \item Retreat (R) to generals $\gen{1}$ (traitor), $\gen{3}$, and $\gen{5}$
+    \item Attack (A) to generals $\gen{2}$, $\gen{4}$, and $\gen{6}$
 \end{itemize}
 
-At this point, each lieutenant only knows what the commander told them directly. The table in Figure 1 represents this initial knowledge state, with each lieutenant recording their received command on the diagonal. Notice how the equal distribution of Attack and Retreat commands creates a deadlock if lieutenants were to make decisions based solely on this first round.
+At this point, each lieutenant only knows what the commander told them directly. The table in Figure 1 represents this initial knowledge state, with each lieutenant recording their received command on the diagonal.
 
 \subsection*{\texttt{\large Round 2}}
-In the second round, each lieutenant acts as a sub-commander and tells all other lieutenants what command they received from the original commander in Round 1.
+In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
 
-Figure 2 illustrates the message flow in Round 2:
+Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting messages during Round 2:
 
-\input{round_2_fig}
+\input{traitor_commander_round_2_fig}
 
-The second traitor $G_1$ (who received "Retreat" from $G_0$) continues the deception by:
+In a different scenario, we can observe how a loyal lieutenant shares consistent information during Round 2:
+
+\input{traitor_commander_loyal_round_2}
+
+After all lieutenants have completed their communications in Round 2, the final information state of each general is represented in the following table:
+
+\input{traitor_commander_final_table_fig}
+
+The traitor lieutenant $\gen{1}$ (who received "Retreat" from $\gen{0}$) continues the deception by:
 \begin{itemize}
     \item Telling some lieutenants that it received "Attack" from the commander
     \item Telling other lieutenants that it received "Retreat" from the commander
@@ -174,12 +181,78 @@ Meanwhile, all loyal lieutenants honestly relay the commands they received. Afte
     \item Reports from all other lieutenants about what they claim to have received
 \end{itemize}
 
-The table in Figure 2 shows what each lieutenant knows after Round 2. Each row represents a sender (a lieutenant sharing what they received from the commander), and each column represents a receiver. The cell values show what message was conveyed.
+The final table shows what each lieutenant knows after all Round 2 messages have been exchanged. Each row represents a sender (a lieutenant sharing what they received from the commander), and each column represents a receiver. The cell values show what message was conveyed.
 
 Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. As shown in the "Majority" row of the table, the consensus among all loyal lieutenants is to "Retreat" (R).
 
 This demonstrates the power of the OM(2) algorithm: despite having a traitor commander and a traitor lieutenant, all loyal lieutenants reach the same conclusion. The Byzantine Generals' Problem is solved for this instance!
 
+\section*{\texttt{\Large A Second Example: Loyal Commander with Collaborating Traitors}}
+
+Let's examine another crucial scenario where the commander is loyal but traitor lieutenants collaborate to disrupt consensus. This scenario demonstrates the algorithm's effectiveness at satisfying the validity condition when the commander is loyal.
+
+\begin{itemize}
+    \item \textbf{Total generals}: $N = 7$
+    \item \textbf{Traitors}: $t = 2$
+    \item \textbf{Loyal generals}: $N - t = 5$
+\end{itemize}
+
+In this scenario:
+\begin{itemize}
+    \item Commander $\gen{0}$ is loyal
+    \item Lieutenants $\gen{1}$ and $\gen{4}$ are traitors
+    \item Lieutenants $\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$ are loyal
+\end{itemize}
+
+We'll implement the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
+
+\subsection*{\texttt{\large Round 1: Loyal Commander Sends Consistent Messages}}
+In the first round, the loyal commander $\gen{0}$ sends the same command to all lieutenants. In this case, the commander chooses Attack (A).
+
+Figure 3 illustrates what happens in Round 1:
+
+\input{loyal_commander_round_1_fig}
+
+As shown in the diagram, the loyal commander $\gen{0}$ sends consistent Attack (A) messages to all lieutenants, including the two traitors ($\gen{1}$ and $\gen{4}$). This is a fundamental aspect of the algorithm - when the commander is loyal, they always send the same message to everyone.
+
+At this point, each lieutenant only knows what the commander told them directly. The table in Figure 3 represents this initial knowledge state, with each lieutenant recording their received command in their own diagonal cell. Since the commander is loyal in our scenario, all cells contain Attack (A) commands. The off-diagonal cells remain empty because the lieutenants haven't yet exchanged messages with each other.
+
+\subsection*{\texttt{\large Round 2: Traitors Attempt to Disrupt Consensus}}
+In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
+
+Figure 4 illustrates how traitors attempt to contradict the commander's orders during Round 2:
+
+\input{loyal_commander_traitor_round_2_fig}
+
+In another scenario, we see how loyal lieutenants faithfully relay the commander's original message:
+
+\input{loyal_commander_loyal_round_2_fig}
+
+After all lieutenants have exchanged their information, we can represent the final state of knowledge with the following comprehensive table:
+
+\input{loyal_commander_final_table}
+
+This is where the traitors' malicious behavior becomes evident. Despite both traitor lieutenants ($\gen{1}$ and $\gen{4}$) receiving Attack (A) from the loyal commander, they attempt to create confusion:
+
+\begin{itemize}
+    \item Traitor $\gen{1}$ consistently contradicts the commander by telling all other lieutenants that it received "Retreat" (R) instead of the actual "Attack" (A) command
+
+    \item Similarly, traitor $\gen{4}$ also sends false information, telling all other lieutenants it received "Retreat" (R) when it actually received "Attack" (A)
+\end{itemize}
+
+Meanwhile, all loyal lieutenants ($\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$) honestly relay the Attack (A) command they received from the commander.
+
+After this round, each lieutenant has:
+\begin{itemize}
+    \item Their original command from the commander (from Round 1)
+    \item Reports from all other lieutenants about what they claim to have received
+\end{itemize}
+
+The final table shows what each lieutenant knows after all Round 2 messages have been exchanged. The diagonal cells (highlighted in yellow) show what each lieutenant itself received from the commander. The off-diagonal cells show what each lieutenant was told by others.
+
+Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. As shown in the "Majority" row of the table, despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Attack (A), which matches the loyal commander's original order.
+
+This demonstrates an important aspect of the OM(2) algorithm: when the commander is loyal, the algorithm ensures that all loyal lieutenants follow the commander's order, even if traitor lieutenants attempt to disrupt the process. The algorithm successfully satisfies both the Agreement and Validity requirements.
 
 % \subsection{Code Example}
 %

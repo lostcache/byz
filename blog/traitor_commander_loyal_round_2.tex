@@ -1,0 +1,150 @@
+% TikZ styles for Byzantine Generals figures
+\tikzstyle{general} = [circle, draw, minimum size=0.9cm, font=\small]
+\tikzstyle{messageA} = [-{Stealth[length=2.5mm, width=2mm]}, blue, thick] % Blue for Attack
+\tikzstyle{messageR} = [-{Stealth[length=2.5mm, width=2mm]}, red, thick]  % Red for Retreat
+\tikzstyle{nodeLabel} = [font=\scriptsize, right=1pt]
+
+% Required packages for non-floating figures with captions
+\usepackage{caption}
+
+% --- Definitions for storing and measuring the table and labels ---
+\newsavebox{\mainTableBox}
+\newlength{\mainTableHeight}
+\newlength{\mainTableWidth}
+\newlength{\senderLabelAreaHeight}
+\newlength{\majorityLabelAreaHeight}
+
+% SECTION 1: The TikZ diagram (MUST APPEAR FIRST)
+% -----------------------------------------------------------------------------
+
+% Round 2 Figure
+In the second round, each lieutenant shares with all other lieutenants what they received from the commander in Round 1.
+
+\begin{center}
+\begin{tikzpicture}[scale=1, transform shape]
+    % Commander
+    \node[general, fill=red!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\traitor)$};
+
+    % Lieutenants (Level 1)
+    \node[general, fill=red!5] (g1) at (-5,0) {$\gen{1}(\traitor)$};
+    \node[general, fill=green!15] (g2) at (-3,0) {$\gen{2}(\loyal)$};
+    \node[general, fill=green!5] (g3) at (-1,0) {$\gen{3}(\loyal)$};
+    \node[general, fill=green!5] (g4) at (1,0) {$\gen{4}(\loyal)$};
+    \node[general, fill=green!5] (g5) at (3,0) {$\gen{5}(\loyal)$};
+    \node[general, fill=green!5] (g6) at (5,0) {$\gen{6}(\loyal)$};
+
+    % Messages from Commander (Level 1 edges)
+    \draw[messageR] (g0) -- (g1) node[midway, above, sloped, black]{\cmdR};
+    \draw[messageA] (g0) -- (g2) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageR] (g0) -- (g3) node[midway, above, sloped, black]{\cmdR};
+    \draw[messageA] (g0) -- (g4) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageR] (g0) -- (g5) node[midway, above, sloped, black]{\cmdR};
+    \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA};
+
+    % Second Level: Lieutenants communicating with each other (add this section)
+    \begin{scope}[yshift=-3cm] % Shift downward for the second layer
+        % New nodes (spaced horizontally like the first layer)
+        \node[general, fill=red!20] (g1a) at (-5.3,-3) {$\gen{1}(\traitor)$};
+        \node[general, fill=green!20] (g3a) at (-1,-3) {$\gen{3}(\loyal)$};
+        \node[general, fill=green!20] (g4a) at (1,-3) {$\gen{4}(\loyal)$};
+        \node[general, fill=green!20] (g5a) at (3,-3) {$\gen{5}(\loyal)$};
+        \node[general, fill=green!20] (g6a) at (5,-3) {$\gen{6}(\loyal)$};
+
+        % Draw edges between lieutenants (example: traitor g1 sends conflicting messages)
+        \draw[messageA] (g2) -- (g1a) node[midway, above, sloped, black]{\cmdA};
+
+        \draw[messageA] (g2) -- (g3a) node[midway, above, sloped, black]{\cmdA};
+        \draw[messageA] (g2) -- (g4a) node[midway, above, sloped, black]{\cmdA};
+        \draw[messageA] (g2) -- (g5a) node[midway, above, sloped, black]{\cmdA};
+        \draw[messageA] (g2) -- (g6a) node[midway, above, sloped, black]{\cmdA};
+    \end{scope}
+\end{tikzpicture}
+\captionof{figure}{Round 2: Lieutenants exchange information about what they received from the commander. Loyal lieutenant $\gen{2}$ faithfully relays the original message to all other lieutenants.}
+\end{center}
+
+% SECTION 2: The Tables (MUST APPEAR SECOND)
+% -----------------------------------------------------------------------------
+
+% --- Step 1: Typeset the main data table into a savebox to measure its dimensions ---
+\sbox{\mainTableBox}{%
+  \renewcommand{\arraystretch}{1.3}%
+  \setlength{\tabcolsep}{12pt}%
+  \begin{tabular}{c|c|c|c|c|c}
+    \textbf{} & \textbf{$\gen{1}$} & \textbf{$\gen{3}$} & \textbf{$\gen{4}$} & \textbf{$\gen{5}$} & \textbf{$\gen{6}$} \\
+    \hline
+
+    \textbf{$\gen{1}$} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{3}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{4}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textbf{\textcolor{blue}{A}} & \cellcolor{yellow!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{5}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{6}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textbf{\textcolor{blue}{A}} & \cellcolor{yellow!20}\textcolor{blue}{A} \\
+    \hline\hline
+    \textbf{Majority} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}& \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+  \end{tabular}%
+}
+% --- Step 2: Get the measured height and width of the saved table ---
+\setlength{\mainTableHeight}{\dimexpr\ht\mainTableBox+\dp\mainTableBox\relax}
+\setlength{\mainTableWidth}{\wd\mainTableBox}
+
+
+% --- Step 3: Calculate proportional heights for Sender and Majority label areas ---
+% Sender area corresponds to 6 out of 7 conceptual rows.
+% Majority area corresponds to 1 out of 7 conceptual rows.
+\setlength{\senderLabelAreaHeight}{\dimexpr 6\mainTableHeight / 7 \relax}
+\setlength{\majorityLabelAreaHeight}{\dimexpr \mainTableHeight - \senderLabelAreaHeight \relax} % Ensures sum is exactly \mainTableHeight
+
+\centering
+{\large \textbf{Receiver}\par}
+\vspace{0.5em}
+
+
+% --- Step 4: Assemble the labels and table using adjustbox for vertical centering ---
+\newlength{\labelcolwidth} % Define a new length
+\settowidth{\labelcolwidth}{\textbf{Majority}} % Set it to the width of "Majority"
+
+\begin{tabular}{@{}c@{\hspace{1em}}c@{}}
+  \adjustbox{valign=c}{% Vertically center the entire label column box
+    \parbox[t][\mainTableHeight][c]{\labelcolwidth}{ % Use \labelcolwidth for the outer parbox width
+      \centering % Horizontally center the inner parboxes (Sender & Majority areas)
+      \parbox[c][\senderLabelAreaHeight][c]{\labelcolwidth}{ % Sender area, use \labelcolwidth
+        \centering\rotatebox[origin=c]{90}{\large\textbf{Sender}}
+      }
+    }
+  }
+  &
+  \adjustbox{valign=c}{\usebox{\mainTableBox}} % Use the saved (and measured) table, vertically centered
+\end{tabular}
+
+
+\vspace{0.7em}
+
+{\small
+\textbf{Legend:} Rows (left) are senders, columns (top) are receivers. Each cell shows the message the sender tells the receiver that it received from the commander. Yellow diagonal: sender's own message from the commander. Blue = Attack (A), Red = Retreat (R).
+}
+
+\begin{center}
+\vspace{1em} % Add some vertical space
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt} % Adjusted
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\loyal)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{red}{\cmdR}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    & & \cellcolor{yellow!30}\textbf{\textcolor{red}{\cmdR}} & & & \\
+    \hline
+    & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & \\
+    \hline
+    & & & & \cellcolor{yellow!30}\textbf{\textcolor{red}{\cmdR}} & \\
+    \hline
+    & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+\end{tabular}
+\par\vspace{0.3em}
+{\scriptsize
+After Round 2, each loyal lieutenant can determine the consensus by taking a majority vote of all reported values. Despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Retreat (R).
+}
+\end{center}

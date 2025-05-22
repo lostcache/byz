@@ -13,4 +13,3 @@ byz
 
 blog/*
 !blog/*.tex
-!blog/*.pdf
