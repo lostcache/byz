@@ -26,6 +26,7 @@
 \newlength{\majorityLabelAreaHeight}
 \usepackage{enumitem}
 \usepackage{datetime2}
+\usepackage{ragged2e}
 
 % Header and Footer - Blog style
 \pagestyle{fancy}
@@ -54,6 +55,7 @@
 \vspace{1em}
 
 \section*{\texttt{\Large Motivation}}
+\justifying
 Distributed systems are everywhere in our modern digital infrastructure—from cloud computing to blockchain networks. However, a fundamental challenge in these systems is achieving consensus when some components might be faulty or malicious.
 
 The Byzantine Generals' Problem, introduced by Leslie Lamport, Robert Shostak, and Marshall Pease in 1982, elegantly captures this challenge through a military metaphor. Understanding this problem and its solution is crucial for anyone working with distributed systems, blockchain technology, or fault-tolerant computing.
@@ -62,6 +64,7 @@ This blog focuses specifically on the solution using unsigned messages—the mos
 
 The unsigned message solution is particularly fascinating because it operates under the loosest guarantees. Unlike solutions that rely on cryptographic signatures or other forms of authentication, this approach must achieve consensus through pure logic and majority reasoning, making it both intellectually stimulating and practically relevant.
 \section*{\texttt{\Large Introduction}}
+\justifying
 Imagine a scenario where several Byzantine generals have surrounded an enemy city. They must decide collectively whether to attack or retreat. To succeed, all loyal generals must agree on the same plan of action—either all attack or all retreat. A split decision would be disastrous.
 
 The generals can only communicate through messengers, and some generals might be traitors (including potentially the commanding general) who seek to prevent the loyal generals from reaching agreement. These traitors can:
@@ -76,6 +79,7 @@ Our challenge is to design an algorithm that ensures all loyal generals reach th
 The solution we'll explore doesn't rely on message signatures or authentication. Instead, it uses a recursive message-passing approach called Oral Message (OM) algorithm that can withstand up to $t$ traitors in a system with at least $3t+1$ generals.
 
 \section*{\texttt{\Large Terminology}}
+\justifying
 Before diving into the solution, let's establish some terminology:
 
 \begin{itemize}
@@ -97,6 +101,7 @@ The Byzantine Generals' Problem has two key requirements:
 Lamport proved that with oral (unsigned) messages, we need at least $3t+1$ generals to tolerate $t$ traitors, and the algorithm requires $t+1$ rounds of message exchanges.
 
 \section*{\texttt{\Large The Algorithm}}
+\justifying
 The Oral Message algorithm (OM) works recursively:
 
 \textbf{OM(0)}: The commander sends a value to all lieutenants, and each lieutenant uses the value received.
@@ -113,6 +118,7 @@ The algorithm guarantees correct operation if $n \geq 3t+1$ where $n$ is the tot
 The recursive nature of this algorithm creates a tree of message exchanges that grows exponentially with $m$. For a system with $n$ generals, the message complexity is $O(n^{m+1})$, which makes it practical only for small values of $t$ and thus $m$.
 
 \section*{\texttt{\Large The Problem}}
+\justifying
 Let's examine a specific instance of the Byzantine Generals' Problem:
 
 \begin{itemize}
@@ -141,12 +147,16 @@ With $t = 2$ traitors, we need at least $3t+1 = 7$ generals, which is exactly wh
 \section*{\texttt{\Large The Algorithm in Play}}
 
 \subsection*{\texttt{\large Round 1}}
+\justifying
 In the first round, the commander $\gen{0}$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants.
 
 Figure 1 illustrates what happens in Round 1:
 
-\input{traitor_commander_round_1_fig}
+\begin{center}
+    \input{traitor_commander_round_1_fig}
+\end{center}
 
+\justifying
 As shown in the diagram, the traitor commander $\gen{0}$ sends:
 \begin{itemize}
     \item Retreat (R) to generals $\gen{1}$ (traitor), $\gen{3}$, and $\gen{5}$
@@ -156,20 +166,28 @@ As shown in the diagram, the traitor commander $\gen{0}$ sends:
 At this point, each lieutenant only knows what the commander told them directly. The table in Figure 1 represents this initial knowledge state, with each lieutenant recording their received command on the diagonal.
 
 \subsection*{\texttt{\large Round 2}}
+\justifying
 In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
 
 Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting messages during Round 2:
 
-\input{traitor_commander_round_2_fig}
+\begin{center}
+    \input{traitor_commander_round_2_fig}
+\end{center}
 
+\justifying
 In a different scenario, we can observe how a loyal lieutenant shares consistent information during Round 2:
 
 \input{traitor_commander_loyal_round_2}
 
+\justifying
 After all lieutenants have completed their communications in Round 2, the final information state of each general is represented in the following table:
 
-\input{traitor_commander_final_table_fig}
+\begin{center}
+    \input{traitor_commander_final_table_fig}
+\end{center}
 
+\justifying
 The traitor lieutenant $\gen{1}$ (who received "Retreat" from $\gen{0}$) continues the deception by:
 \begin{itemize}
     \item Telling some lieutenants that it received "Attack" from the commander
@@ -190,6 +208,7 @@ This demonstrates the power of the OM(2) algorithm: despite having a traitor com
 
 \section*{\texttt{\Large A Second Example: Loyal Commander with Collaborating Traitors}}
 
+\justifying
 Let's examine another crucial scenario where the commander is loyal but traitor lieutenants collaborate to disrupt consensus. This scenario demonstrates the algorithm's effectiveness at satisfying the validity condition when the commander is loyal.
 
 \begin{itemize}
@@ -208,31 +227,37 @@ In this scenario:
 We'll implement the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
 
 \subsection*{\texttt{\large Round 1: Loyal Commander Sends Consistent Messages}}
+\justifying
 In the first round, the loyal commander $\gen{0}$ sends the same command to all lieutenants. In this case, the commander chooses Attack (A).
 
 Figure 3 illustrates what happens in Round 1:
 
 \input{loyal_commander_round_1_fig}
 
+\justifying
 As shown in the diagram, the loyal commander $\gen{0}$ sends consistent Attack (A) messages to all lieutenants, including the two traitors ($\gen{1}$ and $\gen{4}$). This is a fundamental aspect of the algorithm - when the commander is loyal, they always send the same message to everyone.
 
 At this point, each lieutenant only knows what the commander told them directly. The table in Figure 3 represents this initial knowledge state, with each lieutenant recording their received command in their own diagonal cell. Since the commander is loyal in our scenario, all cells contain Attack (A) commands. The off-diagonal cells remain empty because the lieutenants haven't yet exchanged messages with each other.
 
 \subsection*{\texttt{\large Round 2: Traitors Attempt to Disrupt Consensus}}
+\justifying
 In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
 
 Figure 4 illustrates how traitors attempt to contradict the commander's orders during Round 2:
 
 \input{loyal_commander_traitor_round_2_fig}
 
+\justifying
 In another scenario, we see how loyal lieutenants faithfully relay the commander's original message:
 
 \input{loyal_commander_loyal_round_2_fig}
 
+\justifying
 After all lieutenants have exchanged their information, we can represent the final state of knowledge with the following comprehensive table:
 
 \input{loyal_commander_final_table}
 
+\justifying
 This is where the traitors' malicious behavior becomes evident. Despite both traitor lieutenants ($\gen{1}$ and $\gen{4}$) receiving Attack (A) from the loyal commander, they attempt to create confusion:
 
 \begin{itemize}
@@ -274,6 +299,7 @@ This demonstrates an important aspect of the OM(2) algorithm: when the commander
 
 \section*{\texttt{\Large Conclusion}}
 
+\justifying
 The Byzantine Generals' Problem represents one of the fundamental challenges in distributed computing. Through our examination of the Oral Message algorithm (OM), we've seen how it's possible to achieve consensus even in the presence of malicious actors.
 
 Key insights from our exploration:

@@ -82,6 +82,7 @@
 
 
 % --- Step 4: Assemble the labels and table using adjustbox for vertical centering ---
+
 \newlength{\labelcolwidth} % Define a new length
 \settowidth{\labelcolwidth}{\textbf{Majority}} % Set it to the width of "Majority"
 
@@ -105,7 +106,6 @@
 \textbf{Legend:} Rows (left) are senders, columns (top) are receivers. Each cell shows the message the sender tells the receiver that it received from $\gen{1}$. Yellow diagonal: sender's own message from $\gen{1}$. Blue = Attack (A), Red = Retreat (R).
 }
 
-\begin{center}
 \vspace{1em} % Add some vertical space
 \renewcommand{\arraystretch}{1.5}
 \setlength{\tabcolsep}{6pt} % Adjusted
@@ -130,4 +130,3 @@
 {\scriptsize
 After Round 2, each loyal lieutenant can determine the consensus by taking a majority vote of all reported values. Despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Retreat (R).
 }
-\end{center}

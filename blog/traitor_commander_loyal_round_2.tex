@@ -81,12 +81,15 @@
 \setlength{\senderLabelAreaHeight}{\dimexpr 6\mainTableHeight / 7 \relax}
 \setlength{\majorityLabelAreaHeight}{\dimexpr \mainTableHeight - \senderLabelAreaHeight \relax} % Ensures sum is exactly \mainTableHeight
 
-\centering
+\begin{center}
 {\large \textbf{Receiver}\par}
 \vspace{0.5em}
 
 
 % --- Step 4: Assemble the labels and table using adjustbox for vertical centering ---
+
+\newlength{\labelcolwidth} % Define a new length
+\settowidth{\labelcolwidth}{\textbf{Majority}} % Set it to the width of "Majority"
 
 \begin{tabular}{@{}c@{\hspace{1em}}c@{}}
   \adjustbox{valign=c}{% Vertically center the entire label column box
@@ -100,6 +103,7 @@
   &
   \adjustbox{valign=c}{\usebox{\mainTableBox}} % Use the saved (and measured) table, vertically centered
 \end{tabular}
+\end{center}
 
 
 \vspace{0.7em}
@@ -129,8 +133,9 @@
     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
+\end{center}
+
 \par\vspace{0.3em}
 {\scriptsize
 After Round 2, each loyal lieutenant can determine the consensus by taking a majority vote of all reported values. Despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Retreat (R).
 }
-\end{center}

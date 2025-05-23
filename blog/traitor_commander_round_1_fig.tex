@@ -7,7 +7,6 @@
 % Round 1 Figure
 $\gen{0}$ sends its chosen messages to the lieutenants.
 \begin{figure}[htb]
-\centering
 \begin{tikzpicture}[scale=1, transform shape]
     % Commander
     \node[general, fill=red!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\traitor)$};
@@ -51,11 +50,11 @@ $\gen{0}$ sends its chosen messages to the lieutenants.
      & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
+\end{center}
+
 \par\vspace{0.3em}
 {\scriptsize
 The grid above shows the initial values $v_i$ that each lieutenant $\gen{i}$ (represented by row and column headers) receives from Commander $\gen{0}$ and stores. This value is placed on the diagonal cell $(\gen{i}, \gen{i})$. Off-diagonal cells are empty, to be filled by messages exchanged between lieutenants in later algorithm phases (e.g., OM(m-1) rounds).
 }
-\end{center}
 
 \end{figure}
-
