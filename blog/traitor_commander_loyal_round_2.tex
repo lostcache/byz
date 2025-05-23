@@ -81,17 +81,16 @@
 \setlength{\senderLabelAreaHeight}{\dimexpr 6\mainTableHeight / 7 \relax}
 \setlength{\majorityLabelAreaHeight}{\dimexpr \mainTableHeight - \senderLabelAreaHeight \relax} % Ensures sum is exactly \mainTableHeight
 
-\begin{center}
-{\large \textbf{Receiver}\par}
-\vspace{0.5em}
-
-
 % --- Step 4: Assemble the labels and table using adjustbox for vertical centering ---
 
 \newlength{\labelcolwidth} % Define a new length
 \settowidth{\labelcolwidth}{\textbf{Majority}} % Set it to the width of "Majority"
 
+\begin{center}
 \begin{tabular}{@{}c@{\hspace{1em}}c@{}}
+  % Top row: Empty space above Sender label + Receiver header
+  & {\large \textbf{Receiver}} \\[0.3em]
+  % Bottom row: Sender label + Main data table
   \adjustbox{valign=c}{% Vertically center the entire label column box
     \parbox[t][\mainTableHeight][c]{\labelcolwidth}{ % Use \labelcolwidth for the outer parbox width
       \centering % Horizontally center the inner parboxes (Sender & Majority areas)

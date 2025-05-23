@@ -94,7 +94,7 @@ Before diving into the solution, let's establish some terminology:
 
 The Byzantine Generals' Problem has two key requirements:
 \begin{enumerate}
-    \item \textbf{Agreement}: All loyal generals must agree on the same decision.
+    \item \textbf{Agreement}: All loyal generals must agree on the same decision. On receiving equal number of attack and retreat messages the loyal generals default to predetermined decision, $Retreat$
     \item \textbf{Validity}: If the commander is loyal, all loyal generals must follow the commander's order.
 \end{enumerate}
 
@@ -172,7 +172,7 @@ In the second round, each lieutenant acts as the commander for the round and tel
 Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting messages during Round 2:
 
 \begin{center}
-    \input{traitor_commander_round_2_fig}
+    \input{traitor_commander_traitor_round_2_fig}
 \end{center}
 
 \justifying
@@ -200,9 +200,9 @@ Meanwhile, all loyal lieutenants honestly relay the commands they received. Afte
     \item Reports from all other lieutenants about what they claim to have received
 \end{itemize}
 
-The final table shows what each lieutenant knows after all Round 2 messages have been exchanged. Each row represents a sender (a lieutenant sharing what they received from the commander), and each column represents a receiver. The cell values show what message was conveyed.
+The final table shows what each lieutenant knows after all Round 2 messages have been exchanged. The cell values show what message was conveyed.
 
-Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. As shown in the "Majority" row of the table, the consensus among all loyal lieutenants is to "Retreat" (R).
+Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. The consensus among all loyal lieutenants is to "Retreat" (R).
 
 This demonstrates the power of the OM(2) algorithm: despite having a traitor commander and a traitor lieutenant, all loyal lieutenants reach the same conclusion. The Byzantine Generals' Problem is solved for this instance!
 
@@ -314,7 +314,5 @@ Key insights from our exploration:
 This algorithm laid the foundation for many fault-tolerant distributed systems we rely on today, from cloud databases to blockchain networks. Modern consensus protocols like Practical Byzantine Fault Tolerance (PBFT) and those used in blockchain systems are direct descendants of Lamport's original solution.
 
 Understanding these principles not only helps in designing robust distributed systems but also provides insight into the fundamental limits of what's achievable in the presence of Byzantine failures.
-
-What other distributed consensus challenges are you curious about? Share your thoughts and questions in the comments below!
 
 \end{document}
