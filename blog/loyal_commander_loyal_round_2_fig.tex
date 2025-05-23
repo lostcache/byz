@@ -63,17 +63,18 @@ In the second round, each lieutenant shares with all other lieutenants what they
 \sbox{\mainTableBox}{%
   \renewcommand{\arraystretch}{1.3}%
   \setlength{\tabcolsep}{12pt}%
-  \begin{tabular}{c|c|c|c|c|c}
-    \textbf{} & \textbf{$\gen{1}$} & \textbf{$\gen{3}$} & \textbf{$\gen{4}$} & \textbf{$\gen{5}$} & \textbf{$\gen{6}$} \\
+  \begin{tabular}{c|c|c|c|c|c|c}
+    \textbf{} & \textbf{$\gen{1}$} & \textbf{$\gen{2}$} & \textbf{$\gen{3}$} & \textbf{$\gen{4}$} & \textbf{$\gen{5}$} & \textbf{$\gen{6}$} \\
     \hline
 
-    \textbf{$\gen{1}$} & \cellcolor{yellow!30}\textcolor{blue}{A} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} \\
-    \textbf{$\gen{3}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} \\
-    \textbf{$\gen{4}$} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{yellow!30}\textcolor{blue}{A} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} \\
-    \textbf{$\gen{5}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} \\
-    \textbf{$\gen{3}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} \\
+    \textbf{$\gen{1}$} & \cellcolor{yellow!30}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} \\
+    \textbf{$\gen{2}$} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} \\
+    \textbf{$\gen{3}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{4}$} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{gray!30} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{yellow!30}\textcolor{blue}{A} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} \\
+    \textbf{$\gen{5}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{6}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} \\
     \hline\hline
-    \textbf{Majority} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \textbf{Majority} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{gray!30} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}  & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
   \end{tabular}%
 }
 % --- Step 2: Get the measured height and width of the saved table ---
@@ -110,7 +111,7 @@ In the second round, each lieutenant shares with all other lieutenants what they
 \vspace{0.7em}
 
 {\small
-\textbf{Legend:} Rows (left) are senders, columns (top) are receivers. Each cell shows the message the sender tells the receiver that it received from the loyal commander. Yellow diagonal: sender's own message from the commander. Blue = Attack (A), Red = Retreat (R).
+\textbf{Legend:} Rows (left) are senders, columns (top) are receivers. Each cell shows the message the sender tells the receiver that it received from the loyal commander. Yellow diagonal: sender's own message from the commander. Grey cells: $\gen{2}$ is the acting commander and does not participate in consensus. Blue = Attack (A), Red = Retreat (R).
 }
 
 \begin{center}
