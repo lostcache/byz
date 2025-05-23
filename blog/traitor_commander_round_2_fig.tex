@@ -5,15 +5,6 @@
 \tikzstyle{nodeLabel} = [font=\scriptsize, right=1pt]
 
 % --- Definitions for storing and measuring the table and labels ---
-\newsavebox{\mainTableBox}
-\newlength{\mainTableHeight}
-\newlength{\mainTableWidth}
-\newlength{\senderLabelAreaHeight}
-\newlength{\majorityLabelAreaHeight}
-
-% Round 2 Figure
-In the second round, each lieutenant shares with all other lieutenants what they received from the commander in Round 1.
-
 \begin{figure}[htb]
 \centering
 \begin{tikzpicture}[scale=1, transform shape]
@@ -44,7 +35,7 @@ In the second round, each lieutenant shares with all other lieutenants what they
         \node[general, fill=green!20] (g4a) at (-1,-3) {$\gen{4}(\loyal)$};
         \node[general, fill=green!20] (g5a) at (1,-3) {$\gen{5}(\loyal)$};
         \node[general, fill=green!20] (g6a) at (3,-3) {$\gen{6}(\loyal)$};
-    
+
         % Draw edges between lieutenants (example: traitor g1 sends conflicting messages)
         \draw[messageR] (g1) -- (g2a) node[midway, above, sloped, black]{\cmdR};
 
@@ -140,4 +131,3 @@ In the second round, each lieutenant shares with all other lieutenants what they
 After Round 2, each loyal lieutenant can determine the consensus by taking a majority vote of all reported values. Despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Retreat (R).
 }
 \end{center}
-

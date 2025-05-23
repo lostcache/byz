@@ -4,21 +4,9 @@
 \tikzstyle{messageR} = [-{Stealth[length=2.5mm, width=2mm]}, red, thick]  % Red for Retreat
 \tikzstyle{nodeLabel} = [font=\scriptsize, right=1pt]
 
-% Required packages for non-floating figures with captions
-\usepackage{caption}
-
-% --- Definitions for storing and measuring the table and labels ---
-\newsavebox{\mainTableBox}
-\newlength{\mainTableHeight}
-\newlength{\mainTableWidth}
-\newlength{\senderLabelAreaHeight}
-\newlength{\majorityLabelAreaHeight}
 
 % SECTION 1: The TikZ diagram (MUST APPEAR FIRST)
 % -----------------------------------------------------------------------------
-
-% Round 2 Figure
-In the second round, each lieutenant shares with all other lieutenants what they received from the commander in Round 1.
 
 \begin{center}
 \begin{tikzpicture}[scale=1, transform shape]
@@ -99,8 +87,6 @@ In the second round, each lieutenant shares with all other lieutenants what they
 
 
 % --- Step 4: Assemble the labels and table using adjustbox for vertical centering ---
-\newlength{\labelcolwidth} % Define a new length
-\settowidth{\labelcolwidth}{\textbf{Majority}} % Set it to the width of "Majority"
 
 \begin{tabular}{@{}c@{\hspace{1em}}c@{}}
   \adjustbox{valign=c}{% Vertically center the entire label column box
