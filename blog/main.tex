@@ -74,7 +74,7 @@ The generals can only communicate through messengers, and some generals might be
     \item Lie about messages they claim to have received
 \end{itemize}
 
-Our challenge is to design an algorithm that ensures all loyal generals reach the same decision despite these traitors. This is the essence of the Byzantine Generals' Problem.
+The challenge is to design an algorithm that ensures all loyal generals reach the same decision despite these traitors. This is the essence of the Byzantine Generals' Problem.
 
 The solution we'll explore doesn't rely on message signatures or authentication. Instead, it uses a recursive message-passing approach called Oral Message (OM) algorithm that can withstand up to $t$ traitors in a system with at least $3t+1$ generals.
 
@@ -148,9 +148,7 @@ With $t = 2$ traitors, we need at least $3t+1 = 7$ generals, which is exactly wh
 
 \subsection*{\texttt{\large Round 1}}
 \justifying
-In the first round, the commander $\gen{0}$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants.
-
-Figure 1 illustrates what happens in Round 1:
+In the first round, the commander $\gen{0}$ (who is a traitor) sends commands to all lieutenants. Since the commander is a traitor, they can send different commands to different lieutenants. Figure 1 illustrates what happens in Round 1:
 
 \begin{center}
     \input{traitor_commander_round_1_fig}
@@ -176,6 +174,8 @@ Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting mes
 \end{center}
 
 \justifying
+The majority from round $O(m-1)$ is then used as the truth in $O(m)$.\\
+
 In a different scenario, we can observe how a loyal lieutenant shares consistent information during Round 2:
 
 \input{traitor_commander_loyal_round_2}
@@ -188,7 +188,7 @@ After all lieutenants have completed their communications in Round 2, the final 
 \end{center}
 
 \justifying
-The traitor lieutenant $\gen{1}$ (who received "Retreat" from $\gen{0}$) continues the deception by:
+To summarize, The traitor lieutenant $\gen{1}$ (who received "Retreat" from $\gen{0}$) continues the deception by:
 \begin{itemize}
     \item Telling some lieutenants that it received "Attack" from the commander
     \item Telling other lieutenants that it received "Retreat" from the commander
@@ -228,9 +228,7 @@ We'll implement the OM(2) algorithm for this scenario and observe how the loyal 
 
 \subsection*{\texttt{\large Round 1: Loyal Commander Sends Consistent Messages}}
 \justifying
-In the first round, the loyal commander $\gen{0}$ sends the same command to all lieutenants. In this case, the commander chooses Attack (A).
-
-Figure 3 illustrates what happens in Round 1:
+In the first round, the loyal commander $\gen{0}$ sends the same command to all lieutenants. In this case, the commander chooses Attack (A). Figure 3 illustrates what happens in Round 1:
 
 \input{loyal_commander_round_1_fig}
 
