@@ -114,7 +114,6 @@ The Oral Message algorithm (OM) works recursively:
 \end{enumerate}
 
 The algorithm guarantees correct operation if $n \geq 3t+1$ where $n$ is the total number of generals and $t$ is the maximum number of traitors.
-
 The recursive nature of this algorithm creates a tree of message exchanges that grows exponentially with $m$. For a system with $n$ generals, the message complexity is $O(n^{m+1})$, which makes it practical only for small values of $t$ and thus $m$.
 
 \section*{\texttt{\Large The Problem}}
@@ -165,9 +164,11 @@ At this point, each lieutenant only knows what the commander told them directly.
 
 \subsection*{\texttt{\large Round 2}}
 \justifying
-In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
+For this instance of the problem as $m=2$, the second round will constitute the $O(0)$ round (The final round).
+In the second round, each lieutenant takes turns acting as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
+Note that this round effectively becomes a ``he said, she said'' situation. Note that each lieutenant while acting as the commander does not send out any new commands, but instead just reports what they claim the commander of the previous round (In this case, the original commander $\gen{0}$) told them, regardless of whether that claim is truthful.
 
-Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting messages during Round 2:
+Figure 2 illustrates a scenario where a traitor lieutenant sends conflicting messages during Round 2. The rows and columns for the lieutenant who is acting as the commander (In this case, $\gen{1}$) are greyed out as they have already played their role by relaying the messages that they received from the commander of the previous round and do not participate in the consensus that follows. The diagonal in the table contains the value that the lieutenant received from the acting commander for the round.
 
 \begin{center}
     \input{traitor_commander_traitor_round_2_fig}
@@ -188,10 +189,10 @@ After all lieutenants have completed their communications in Round 2, the final 
 \end{center}
 
 \justifying
-To summarize, The traitor lieutenant $\gen{1}$ (who received "Retreat" from $\gen{0}$) continues the deception by:
+To summarize, The traitor lieutenant $\gen{1}$ (who received ``Retreat'' from $\gen{0}$) continues the deception by:
 \begin{itemize}
-    \item Telling some lieutenants that it received "Attack" from the commander
-    \item Telling other lieutenants that it received "Retreat" from the commander
+    \item Telling some lieutenants that it received ``Attack'' from the commander
+    \item Telling other lieutenants that it received ``Retreat'' from the commander
 \end{itemize}
 
 Meanwhile, all loyal lieutenants honestly relay the commands they received. After this round, each lieutenant has:
@@ -201,9 +202,7 @@ Meanwhile, all loyal lieutenants honestly relay the commands they received. Afte
 \end{itemize}
 
 The final table shows what each lieutenant knows after all Round 2 messages have been exchanged. The cell values show what message was conveyed.
-
-Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. The consensus among all loyal lieutenants is to "Retreat" (R).
-
+Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. The consensus among all loyal lieutenants is to ``Retreat'' (R).
 This demonstrates the power of the OM(2) algorithm: despite having a traitor commander and a traitor lieutenant, all loyal lieutenants reach the same conclusion. The Byzantine Generals' Problem is solved for this instance!
 
 \section*{\texttt{\Large A Second Example: Loyal Commander with Collaborating Traitors}}
@@ -224,7 +223,7 @@ In this scenario:
     \item Lieutenants $\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$ are loyal
 \end{itemize}
 
-We'll implement the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
+We'll execute the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
 
 \subsection*{\texttt{\large Round 1: Loyal Commander Sends Consistent Messages}}
 \justifying
@@ -233,15 +232,14 @@ In the first round, the loyal commander $\gen{0}$ sends the same command to all 
 \input{loyal_commander_round_1_fig}
 
 \justifying
-As shown in the diagram, the loyal commander $\gen{0}$ sends consistent Attack (A) messages to all lieutenants, including the two traitors ($\gen{1}$ and $\gen{4}$). This is a fundamental aspect of the algorithm - when the commander is loyal, they always send the same message to everyone.
-
+As shown in the diagram, the loyal commander $\gen{0}$ sends consistent Attack (A) messages to all lieutenants, including the two traitors ($\gen{1}$ and $\gen{4}$).
 At this point, each lieutenant only knows what the commander told them directly. The table in Figure 3 represents this initial knowledge state, with each lieutenant recording their received command in their own diagonal cell. Since the commander is loyal in our scenario, all cells contain Attack (A) commands. The off-diagonal cells remain empty because the lieutenants haven't yet exchanged messages with each other.
 
 \subsection*{\texttt{\large Round 2: Traitors Attempt to Disrupt Consensus}}
 \justifying
 In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
-
 Figure 4 illustrates how traitors attempt to contradict the commander's orders during Round 2:
+
 
 \input{loyal_commander_traitor_round_2_fig}
 
