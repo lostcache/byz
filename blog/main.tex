@@ -578,10 +578,10 @@ Every loyal lieutenant will now take the majority of messages that were obtained
 
 
 \justifying
-To summarize, The traitor lieutenant $\gen{1}$ (who received ``Retreat'' from $\gen{0}$) continues the deception by:
+To summarize, The traitor lieutenant $\gen{1}$ (who received $Retreat$ from $\gen{0}$) continues the deception by:
 \begin{itemize}
-    \item Telling some lieutenants that it received ``Attack'' from the commander
-    \item Telling other lieutenants that it received ``Retreat'' from the commander
+    \item Telling some lieutenants that it received $Attack$ from the commander
+    \item Telling other lieutenants that it received $Retreat$ from the commander
 \end{itemize}
 
 Meanwhile, all loyal lieutenants honestly relay the commands they received. After this round, each lieutenant has:
@@ -596,7 +596,7 @@ This demonstrates the power of the OM(2) algorithm: despite having a traitor com
 \section*{\texttt{\Large A Second Example: Loyal Commander with Collaborating Traitors}}
 
 \justifying
-To completely solidify our understanding of the algorithm let's examine a different but also  crucial scenario where the commander is loyal but traitor lieutenants collaborate to disrupt consensus. This scenario demonstrates the algorithm's effectiveness at satisfying the validity condition when the commander is loyal.
+To completely solidify our understanding of the algorithm let's examine a different but also  crucial scenario where the commander is loyal but traitor lieutenants collaborate to disrupt consensus.
 
 \begin{itemize}
     \item \textbf{Total generals}: $N = 7$
@@ -613,56 +613,327 @@ In this scenario:
 
 We'll execute the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
 
-\subsection*{\texttt{\large Round 1: Loyal Commander Sends Consistent Messages}}
+\subsection*{\texttt{\large Round 2}}
 \justifying
-In the first round, the loyal commander $\gen{0}$ sends the same command to all lieutenants. In this case, the commander chooses Attack (A). Figure ~\ref{fig:loyal_commander_round_1} illustrates what happens in Round 1:
+In Round 2, the loyal commander $\gen{0}$ sends the same command to all lieutenants. For this example, the commander issues an \textit{Attack} order. Figure~\ref{fig:loyal_commander_round_2} illustrates this initial, honest communication.
 
-\input{loyal_commander_round_1_fig}
+% TikZ styles for Byzantine Generals figures
+\tikzstyle{general} = [circle, draw, minimum size=0.9cm, font=\small]
+\tikzstyle{messageA} = [-{Stealth[length=2.5mm, width=2mm]}, blue, thick] % Blue for Attack
+\tikzstyle{messageR} = [-{Stealth[length=2.5mm, width=2mm]}, red, thick]  % Red for Retreat
+\tikzstyle{nodeLabel} = [font=\scriptsize, right=1pt]
+
+% Round 2 Figure
+\begin{center}
+\begin{tikzpicture}[scale=1, transform shape]
+    % Commander (now loyal)
+    \node[general, fill=green!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\loyal)$};
+
+    % Lieutenants (two traitors: G1 and G4)
+    \node[general, fill=red!20] (g1) at (-5,0) {$\gen{1}(\traitor)$};
+    \node[general, fill=green!20] (g2) at (-3,0) {$\gen{2}(\loyal)$};
+    \node[general, fill=green!20] (g3) at (-1,0) {$\gen{3}(\loyal)$};
+    \node[general, fill=red!20] (g4) at (1,0) {$\gen{4}(\traitor)$};
+    \node[general, fill=green!20] (g5) at (3,0) {$\gen{5}(\loyal)$};
+    \node[general, fill=green!20] (g6) at (5,0) {$\gen{6}(\loyal)$};
+
+    % Messages from G0 - all the same since commander is loyal
+    \draw[messageA] (g0) -- (g1) node[midway, above, sloped, black]{\cmdA}; % G0 to G1
+    \draw[messageA] (g0) -- (g2) node[midway, above, sloped, black]{\cmdA}; % G0 to G2
+    \draw[messageA] (g0) -- (g3) node[midway, above, sloped, black]{\cmdA}; % G0 to G3
+    \draw[messageA] (g0) -- (g4) node[midway, above, sloped, black]{\cmdA}; % G0 to G4
+    \draw[messageA] (g0) -- (g5) node[midway, above, sloped, black]{\cmdA}; % G0 to G5
+    \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA}; % G0 to G6
+\end{tikzpicture}
+\captionof{figure}{Round 2: Loyal Commander $\gen{0}$ sends a consistent $Attack$ message to all lieutenants.}
+\label{fig:loyal_commander_round_2}
+\end{center}
 
 \justifying
-As shown in the diagram, the loyal commander $\gen{0}$ sends consistent Attack (A) messages to all lieutenants, including the two traitors ($\gen{1}$ and $\gen{4}$).
-At this point, each lieutenant only knows what the commander told them directly. Table~\ref{tab:loyal_commander_round_1_values} represents this initial knowledge state, with each lieutenant recording their received command in their own diagonal cell. Since the commander is loyal in our scenario, all cells contain Attack (A) commands. The off-diagonal cells remain empty because the lieutenants haven't yet exchanged messages with each other.
+Because the commander is loyal, every lieutenant, including the traitors $\gen{1}$ and $\gen{4}$, receives the same \textit{Attack} command. Table~\ref{tab:loyal_commander_round_2_values} shows the initial state of knowledge for each lieutenant after this round. The diagonal entries represent the command each lieutenant received directly from $\gen{0}$.
 
-\subsection*{\texttt{\large Round 2: Traitors Attempt to Disrupt Consensus}}
+\begin{center}
+\vspace{1em} % Add some vertical space
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt} % Adjusted
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & & & \\
+    \hline
+     & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & & \\
+    \hline
+     & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & \\
+    \hline
+     & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & \\
+    \hline
+     & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \\
+    \hline
+     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+\end{tabular}
+\captionof{table}{Initial values received by each lieutenant from the loyal commander. Off-diagonal cells are empty, to be filled by messages exchanged in the next rounds.}
+\label{tab:loyal_commander_round_2_values}
+\end{center}
+
+\subsection*{\texttt{\large Round 1}}
 \justifying
-In the second round, each lieutenant acts as the commander for the round and tells all other lieutenants what command they received from the original commander in Round 1.
-Figure~\ref{fig:loyal_commander_traitor_round_2} illustrates how traitors attempt to contradict the commander's orders during Round 2:
+In Round 1, each lieutenant acts as the commander and relays the message they received from $\gen{0}$ to all other lieutenants. This is where the traitors make their move.
 
+\subsubsection*{\texttt{\large First Iteration of Round 1: A Traitor Speaks}}
+\justifying
+Let's consider the iteration where traitor $\gen{1}$ is the acting commander. Although $\gen{1}$ received an \textit{Attack} command, it will lie and tell every other lieutenant that it received a \textit{Retreat} command. Figure~\ref{fig:loyal_commander_traitor_round_1} illustrates this deception.
 
-\input{loyal_commander_traitor_round_2_fig}
+\begin{center}
+\begin{tikzpicture}[scale=1, transform shape]
+    % Commander (loyal)
+    \node[general, fill=green!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\loyal)$};
+
+    % Lieutenants (Level 1)
+    \node[general, fill=red!20] (g1) at (-5,0) {$\gen{1}(\traitor)$};
+    \node[general, fill=green!5] (g2) at (-3,0) {$\gen{2}(\loyal)$};
+    \node[general, fill=green!5] (g3) at (-1,0) {$\gen{3}(\loyal)$};
+    \node[general, fill=red!5] (g4) at (1,0) {$\gen{4}(\traitor)$};
+    \node[general, fill=green!5] (g5) at (3,0) {$\gen{5}(\loyal)$};
+    \node[general, fill=green!5] (g6) at (5,0) {$\gen{6}(\loyal)$};
+
+    % Messages from Commander (Level 1 edges)
+    \draw[messageA] (g0) -- (g1) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g2) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g3) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g4) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g5) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA};
+
+    % Second Level: Lieutenants communicating with each other
+    \begin{scope}[yshift=-3cm] % Shift downward for the second layer
+        % New nodes (spaced horizontally like the first layer)
+        \node[general, fill=green!20] (g2a) at (-3,-3) {$\gen{2}(\loyal)$};
+        \node[general, fill=green!20] (g3a) at (-1,-3) {$\gen{3}(\loyal)$};
+        \node[general, fill=red!20] (g4a) at (1,-3) {$\gen{4}(\traitor)$};
+        \node[general, fill=green!20] (g5a) at (3,-3) {$\gen{5}(\loyal)$};
+        \node[general, fill=green!20] (g6a) at (5,-3) {$\gen{6}(\loyal)$};
+
+        % Draw edges - traitor G1 sends contradictory Retreat messages to all lieutenants
+            \draw[messageR] (g1) -- (g2a) node[midway, above, sloped, black]{\cmdR};
+            \draw[messageR] (g1) -- (g3a) node[midway, above, sloped, black]{\cmdR};
+            \draw[messageR] (g1) -- (g4a) node[midway, above, sloped, black]{\cmdR};
+            \draw[messageR] (g1) -- (g5a) node[midway, above, sloped, black]{\cmdR};
+            \draw[messageR] (g1) -- (g6a) node[midway, above, sloped, black]{\cmdR};
+    \end{scope}
+\end{tikzpicture}
+\captionof{figure}{Round 1, Iteration 1: Traitor lieutenant $\gen{1}$, acting as commander, falsely reports receiving a \textit{Retreat} command.}
+\label{fig:loyal_commander_traitor_round_1}
+\end{center}
+
+\subsubsection*{\texttt{\large Round 0 for First Iteration of Round 1}}
+\justifying
+Now, the other lieutenants ($\gen{2}$, $\gen{3}$, $\gen{4}$, $\gen{5}$, $\gen{6}$) enter Round 0. They gossip about the command they just received from the acting commander, $\gen{1}$. As shown in Table~\ref{tab:loyal_commander_round_0_iter_1}, loyal lieutenants honestly relay the \textit{Retreat} message they received from $\gen{1}$. The other traitor, $\gen{4}$, also relays \textit{Retreat}, as collaborating traitors have no incentive to expose each other's lies to the loyal generals. Each lieutenant then takes the majority of the messages in their column. Since $\gen{1}$ sent a consistent lie, every other lieutenant's majority decision for this iteration is \textit{Retreat}.
+
+\sbox{\mainTableBox}{%
+  \renewcommand{\arraystretch}{1.3}%
+  \setlength{\tabcolsep}{12pt}%
+  \begin{tabular}{c|c|c|c|c|c|c}
+    \textbf{} & \textbf{$\gen{1}$} & \textbf{$\gen{2}$} & \textbf{$\gen{3}$} & \textbf{$\gen{4}$} & \textbf{$\gen{5}$} & \textbf{$\gen{6}$} \\
+    \hline
+    \textbf{$\gen{1}$} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} \\
+    \textbf{$\gen{2}$} & \cellcolor{gray!30} & \cellcolor{yellow!30}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{3}$} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{yellow!30}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{4}$} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{yellow!30}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{5}$} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{yellow!30}\textbf{\textcolor{red}{R}} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{6}$} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{yellow!30}\textbf{\textcolor{red}{R}} \\
+    \hline\hline
+    \textbf{Majority} & \cellcolor{gray!30} & \cellcolor{red!75}\textbf{\textcolor{white}{R}}  & \cellcolor{red!75}\textbf{\textcolor{white}{R}}  & \cellcolor{red!75}\textbf{\textcolor{white}{R}}  & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+  \end{tabular}%
+}
+\setlength{\mainTableHeight}{\dimexpr\ht\mainTableBox+\dp\mainTableBox\relax}
+\setlength{\mainTableWidth}{\wd\mainTableBox}
+\setlength{\senderLabelAreaHeight}{\dimexpr 6\mainTableHeight / 7 \relax}
+\setlength{\majorityLabelAreaHeight}{\dimexpr \mainTableHeight - \senderLabelAreaHeight \relax}
+\settowidth{\labelcolwidth}{\textbf{Majority}}
+\begin{center}
+\begin{tabular}{@{}c@{\hspace{1em}}c@{}}
+  & {\large \textbf{Receiver}} \\[0.3em]
+  \adjustbox{valign=c}{\parbox[t][\mainTableHeight][c]{\labelcolwidth}{\centering \parbox[c][\senderLabelAreaHeight][c]{\labelcolwidth}{\centering\rotatebox[origin=c]{90}{\large\textbf{Sender}}}}} &
+  \adjustbox{valign=c}{\usebox{\mainTableBox}}
+\end{tabular}
+\captionof{table}{Round 0 gossip when $\gen{1}$ is commander. All lieutenants report receiving `Retreat', leading to a unanimous (but false) majority.}
+\label{tab:loyal_commander_round_0_iter_1}
+\end{center}
+
+% Add the majority from Round 0 to the knowledge table for Round 1 (iteration for G1)
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+     & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & & \\
+    \hline
+     & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & \\
+    \hline
+     & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & \\
+    \hline
+     & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \\
+    \hline
+     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+\end{tabular}
+\captionof{table}{Majority from Round 0 (when $\gen{1}$ is acting commander) is incorporated into the knowledge table for Round 1. The first column (for $\gen{1}$) is the value received directly from the commander; the rest are the majorities from the previous Round 0.}
+\label{tab:loyal_commander_round_1_iter_1_summary}
+\end{center}
+
+\subsubsection*{\texttt{\large Second Iteration of Round 1: A Loyal General Speaks}}
+\justifying
+Next, let's see what happens when a loyal lieutenant, $\gen{2}$, is the acting commander. $\gen{2}$ honestly reports the \textit{Attack} command it received from $\gen{0}$ to all other lieutenants, as shown in Figure \ref{fig:loyal_commander_loyal_round_1}.
+
+\begin{center}
+\begin{tikzpicture}[scale=1, transform shape]
+    % Commander (loyal)
+    \node[general, fill=green!20, label={[nodeLabel]right:{Commander}}] (g0) at (0,4) {$\gen{0}(\loyal)$};
+
+    % Lieutenants (Level 1)
+    \node[general, fill=red!5] (g1) at (-5,0) {$\gen{1}(\traitor)$};
+    \node[general, fill=green!20] (g2) at (-3,0) {$\gen{2}(\loyal)$};
+    \node[general, fill=green!5] (g3) at (-1,0) {$\gen{3}(\loyal)$};
+    \node[general, fill=red!5] (g4) at (1,0) {$\gen{4}(\traitor)$};
+    \node[general, fill=green!5] (g5) at (3,0) {$\gen{5}(\loyal)$};
+    \node[general, fill=green!5] (g6) at (5,0) {$\gen{6}(\loyal)$};
+
+    % Messages from Commander (Level 1 edges)
+    \draw[messageA] (g0) -- (g1) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g2) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g3) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g4) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g5) node[midway, above, sloped, black]{\cmdA};
+    \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA};
+
+    % Second Level: Lieutenants communicating with each other
+    \begin{scope}[yshift=-3cm] % Shift downward for the second layer
+        % New nodes (spaced horizontally like the first layer)
+        \node[general, fill=red!20] (g1a) at (-5.3,-3) {$\gen{1}(\traitor)$};
+        \node[general, fill=green!20] (g3a) at (-1,-3) {$\gen{3}(\loyal)$};
+        \node[general, fill=red!20] (g4a) at (1,-3) {$\gen{4}(\traitor)$};
+        \node[general, fill=green!20] (g5a) at (3,-3) {$\gen{5}(\loyal)$};
+        \node[general, fill=green!20] (g6a) at (5,-3) {$\gen{6}(\loyal)$};
+
+        % Draw edges - loyal G2 sends consistent Attack messages to all lieutenants
+            \draw[messageA] (g2) -- (g1a) node[midway, above, sloped, black]{\cmdA};
+            \draw[messageA] (g2) -- (g3a) node[midway, above, sloped, black]{\cmdA};
+            \draw[messageA] (g2) -- (g4a) node[midway, above, sloped, black]{\cmdA};
+            \draw[messageA] (g2) -- (g5a) node[midway, above, sloped, black]{\cmdA};
+            \draw[messageA] (g2) -- (g6a) node[midway, above, sloped, black]{\cmdA};
+    \end{scope}
+\end{tikzpicture}
+\captionof{figure}{Round 1, Iteration 2: Loyal lieutenant $\gen{2}$, acting as commander, honestly reports receiving an \textit{Attack} command.}
+\label{fig:loyal_commander_loyal_round_1}
+\end{center}
+
+\subsubsection*{\texttt{\large Round 0 for Second Iteration of Round 1}}
+\justifying
+In the corresponding Round 0, the lieutenants of $\gen{2}$ gossip about the message they received. This time, the traitors $\gen{1}$ and $\gen{4}$ lie, claiming they received \textit{Retreat} from $\gen{2}$, while loyal lieutenants report truthfully. Table~\ref{tab:loyal_commander_round_0_iter_2} shows the messages exchanged. Each loyal lieutenant (columns for $\gen{3}, \gen{5}, \gen{6}$) receives two false \textit{Retreat} messages (from $\gen{1}$ and $\gen{4}$) but three honest \textit{Attack} messages (from $\gen{2}$ via the diagonal, and from $\gen{3}, \gen{5}, \gen{6}$). The majority for all loyal lieutenants is therefore \textit{Attack}.
+
+\sbox{\mainTableBox}{%
+  \renewcommand{\arraystretch}{1.3}%
+  \setlength{\tabcolsep}{12pt}%
+  \begin{tabular}{c|c|c|c|c|c|c}
+    \textbf{} & \textbf{$\gen{1}$} & \textbf{$\gen{2}$} & \textbf{$\gen{3}$} & \textbf{$\gen{4}$} & \textbf{$\gen{5}$} & \textbf{$\gen{6}$} \\
+    \hline
+    \textbf{$\gen{1}$} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{2}$} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} & \cellcolor{gray!30} \\
+    \textbf{$\gen{3}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{4}$} & \cellcolor{red!20}\textbf{\textcolor{red}{R}} & \cellcolor{gray!30} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{red!20}\textcolor{red}{R} & \cellcolor{red!20}\textcolor{red}{R} \\
+    \textbf{$\gen{5}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{A}} & \cellcolor{blue!20}\textcolor{blue}{A} \\
+    \textbf{$\gen{6}$} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{gray!30} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textcolor{blue}{A} & \cellcolor{blue!20}\textbf{\textcolor{blue}{A}} & \cellcolor{yellow!30}\textcolor{blue}{A} \\
+    \hline\hline
+    \textbf{Majority} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{gray!30} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}}& \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+  \end{tabular}%
+}
+\setlength{\mainTableHeight}{\dimexpr\ht\mainTableBox+\dp\mainTableBox\relax}
+\setlength{\mainTableWidth}{\wd\mainTableBox}
+\setlength{\senderLabelAreaHeight}{\dimexpr 6\mainTableHeight / 7 \relax}
+\setlength{\majorityLabelAreaHeight}{\dimexpr \mainTableHeight - \senderLabelAreaHeight \relax}
+\settowidth{\labelcolwidth}{\textbf{Majority}}
+\begin{center}
+\begin{tabular}{@{}c@{\hspace{1em}}c@{}}
+  & {\large \textbf{Receiver}} \\[0.3em]
+  \adjustbox{valign=c}{\parbox[t][\mainTableHeight][c]{\labelcolwidth}{\centering \parbox[c][\senderLabelAreaHeight][c]{\labelcolwidth}{\centering\rotatebox[origin=c]{90}{\large\textbf{Sender}}}}} &
+  \adjustbox{valign=c}{\usebox{\mainTableBox}}
+\end{tabular}
+\captionof{table}{Round 0 gossip when $\gen{2}$ is commander. Traitors $\gen{1}$ and $\gen{4}$ send false reports, but loyal lieutenants form a majority for \textit{Attack}.}
+\label{tab:loyal_commander_round_0_iter_2}
+\end{center}
+
+% Add the majority from Round 0 to the knowledge table for Round 1 (iteration for G2)
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+     & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & & \\
+    \hline
+     & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & & \\
+    \hline
+     & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \\
+    \hline
+     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+\end{tabular}
+\captionof{table}{Majority from Round 0 (when $\gen{2}$ is acting commander) is incorporated into the knowledge table for Round 1. The second column (for $\gen{2}$) is the value received directly from the commander; the rest are the majorities from the previous Round 0.}
+\label{tab:loyal_commander_round_1_iter_2_summary}
+\end{center}
+
+\subsection*{\texttt{\large Concluding the Example}}
+\justifying
+This process repeats for every lieutenant acting as commander in Round 1. Traitors $\gen{1}$ and $\gen{4}$ will always report receiving \textit{Retreat}. Loyal lieutenants $\gen{2}, \gen{3}, \gen{5}, \gen{6}$ will always honestly report receiving \textit{Attack}. After all iterations are complete, each lieutenant has a vector of values, one for each of the other lieutenants. Table~\ref{tab:loyal_commander_final_knowledge} shows the final state of knowledge. Each row represents the majority value determined from the corresponding Round 1 iteration.
+
+\begin{center}
+\vspace{1em} % Add some vertical space
+\renewcommand{\arraystretch}{1.5}
+\setlength{\tabcolsep}{6pt} % Adjusted
+\begin{tabular}{c|c|c|c|c|c}
+    \hline
+    \textbf{$\gen{1}(\traitor)$} & \textbf{$\gen{2}(\loyal)$} & \textbf{$\gen{3}(\loyal)$} & \textbf{$\gen{4}(\traitor)$} & \textbf{$\gen{5}(\loyal)$} & \textbf{$\gen{6}(\loyal)$} \\
+    \hline
+    \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} & \cellcolor{red!75}\textbf{\textcolor{white}{R}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+    \hline
+    \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
+    \hline
+    \hline
+    \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
+\end{tabular}
+\captionof{table}{Final knowledge table for all lieutenants after OM(2) completes, consistent with the earlier Round 1 knowledge tables. Each cell shows the majority value from the corresponding Round 0, and the diagonal shows the direct message from the commander.}
+\label{tab:loyal_commander_final_knowledge}
+\end{center}
 
 \justifying
-In another scenario, we see how loyal lieutenants faithfully relay the commander's original message as shown in Figure~\ref{fig:loyal_commander_loyal_round_2_tree}:
-
-\input{loyal_commander_loyal_round_2_fig}
-
-\justifying
-After all lieutenants have exchanged their information, we can represent the final state of knowledge with Tables~\ref{tab:loyal_commander_traitor_round_2_messages} and \ref{tab:loyal_commander_loyal_round_2_messages}, as well as the summary shown in Table~\ref{tab:loyal_commander_loyal_round_2_summary}:
-
-\input{loyal_commander_final_table}
-
-\justifying
-This is where the traitors' malicious behavior becomes evident. Despite both traitor lieutenants ($\gen{1}$ and $\gen{4}$) receiving Attack (A) from the loyal commander, they attempt to create confusion:
-
+Finally, each loyal lieutenant ($\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$) takes a majority vote of the values in its column from Table~\ref{tab:loyal_commander_final_knowledge}. Each of their columns contains:
 \begin{itemize}
-    \item Traitor $\gen{1}$ consistently contradicts the commander by telling all other lieutenants that it received "Retreat" (R) instead of the actual "Attack" (A) command
-
-    \item Similarly, traitor $\gen{4}$ also sends false information, telling all other lieutenants it received "Retreat" (R) when it actually received "Attack" (A)
+    \item One \textit{Attack} from the commander ($\gen{0}$)
+    \item Two \textit{Retreat} values (from traitors $\gen{1}$ and $\gen{4}$)
+    \item Four \textit{Attack} values (from loyal lieutenants $\gen{2}$, $\gen{3}$, $\gen{5}$, $\gen{6}$, and themselves)
 \end{itemize}
+The final tally for each loyal lieutenant is five \textit{Attack} messages to two \textit{Retreat} messages. As shown in the "Majority" row, they all correctly decide to \textit{Attack}.
 
-Meanwhile, all loyal lieutenants ($\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$) honestly relay the Attack (A) command they received from the commander.
-
-After this round, each lieutenant has:
-\begin{itemize}
-    \item Their original command from the commander (from Round 1)
-    \item Reports from all other lieutenants about what they claim to have received
-\end{itemize}
-
-Table~\ref{tab:loyal_commander_loyal_round_2_summary} shows what each lieutenant knows after all Round 2 messages have been exchanged. The diagonal cells (highlighted in yellow) show what each lieutenant itself received from the commander. The off-diagonal cells show what each lieutenant was told by others.
-
-Now, each loyal lieutenant can determine what command to follow by taking a majority vote of all reported values. As shown in the "Majority" row of the table, despite the conflicting information from the traitors, all loyal lieutenants reach the same conclusion: Attack (A), which matches the loyal commander's original order.
-
-This demonstrates an important aspect of the OM(2) algorithm: when the commander is loyal, the algorithm ensures that all loyal lieutenants follow the commander's order, even if traitor lieutenants attempt to disrupt the process. The algorithm successfully satisfies both the Agreement and Validity requirements.
+This demonstrates that when the commander is loyal, OM(2) ensures all loyal lieutenants follow the commander's order, satisfying the \textbf{Validity} requirement. The traitors' lies are filtered out by the majority, and \textbf{Agreement} is achieved among the loyal generals.
 
 \section*{\texttt{\Large Conclusion}}
 
