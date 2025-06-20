@@ -65,9 +65,9 @@ This blog focuses specifically on the solution using unsigned messages—the mos
 The unsigned message solution is particularly fascinating because it operates under the loosest guarantees. Unlike solutions that rely on cryptographic signatures or other forms of authentication, this approach must achieve consensus through pure logic and majority reasoning, making it both intellectually stimulating and practically relevant.
 \section*{\texttt{\Large Introduction}}
 \justifying
-Imagine a scenario where several Byzantine generals have surrounded an enemy city. They must decide collectively whether to attack or retreat. To succeed, all loyal generals must agree on the same plan of action—either all attack or all retreat. A split decision would be disastrous.
+Imagine a scenario where several Byzantine generals have surrounded an enemy city. They must decide collectively whether to $Attack$ or $Retreat$. To succeed, all loyal generals must agree on the same plan of action—either all $Attack$ or all $Retreat$. A split decision would be disastrous.
 
-The generals can only communicate through messengers, and some generals might be traitors (including potentially the commanding general) who seek to prevent the loyal generals from reaching agreement. These traitors can:
+The generals can only communicate through messengers, and some generals might be traitors (potentially including the commanding general) who seek to prevent the loyal generals from reaching agreement. These traitors can:
 \begin{itemize}
     \item Send different messages to different generals
     \item Collude with other traitors
@@ -76,7 +76,7 @@ The generals can only communicate through messengers, and some generals might be
 
 The challenge is to design an algorithm that ensures all loyal generals reach the same decision despite these traitors. This is the essence of the Byzantine Generals' Problem.
 
-The solution we'll explore doesn't rely on message signatures or authentication. Instead, it uses a recursive message-passing approach called Oral Message (OM) algorithm that can withstand up to $t$ traitors in a system with at least $3t+1$ generals.
+The solution we explore does not rely on message signatures or authentication. Instead, it uses a recursive message-passing approach called Oral Message (OM) algorithm that can withstand up to $t$ traitors in a system with at least $3t+1$ generals.
 
 \section*{\texttt{\Large Terminology}}
 \justifying
@@ -88,13 +88,13 @@ Before diving into the solution, let's establish some terminology:
     \item \textbf{Lieutenants}: All other generals who must follow the commander's decision.
     \item \textbf{Loyal ($\mathcal{L}$)}: Generals who follow the algorithm correctly.
     \item \textbf{Traitors ($\mathcal{T}$)}: Generals who may behave arbitrarily and maliciously.
-    \item \textbf{Commands}: The possible decisions, typically Attack (\textbf{A}) or Retreat (\textbf{R}).
+    \item \textbf{Commands}: The possible decisions, typically $Attack$ or $Retreat$.
     \item \textbf{OM($m$)}: The Oral Message algorithm with recursion depth $m$.
 \end{itemize}
 
 The Byzantine Generals' Problem has two key requirements:
 \begin{enumerate}
-    \item \textbf{Agreement}: All loyal generals must agree on the same decision. On receiving equal number of attack and retreat messages the loyal generals default to predetermined decision, $Retreat$
+    \item \textbf{Agreement}: All loyal generals must agree on the same decision. On receiving equal number of $Attack$ and $Retreat$ messages the loyal generals default to predetermined decision, $Retreat$
     \item \textbf{Validity}: If the commander is loyal, all loyal generals must follow the commander's order.
 \end{enumerate}
 
@@ -108,9 +108,9 @@ The Oral Message algorithm (OM) works recursively:
 
 \textbf{OM($m$)}, for $m > 0$:
 \begin{enumerate}
-    \item The commander sends a value to each lieutenant.
-    \item Each lieutenant acts as a commander in the OM($m-1$) algorithm to share the value they received with all other lieutenants.
-    \item Each lieutenant determines the majority value reported for each general and uses that as their final decision.
+    \item The commander sends a message to each lieutenant.
+    \item Each lieutenant acts as a commander in the OM($m-1$) algorithm to share the message they received with all other lieutenants.
+    \item Each lieutenant determines the majority value reported for each commander and uses that as their final decision.
 \end{enumerate}
 
 The algorithm guarantees correct operation if $n \geq 3t+1$ where $n$ is the total number of generals and $t$ is the maximum number of traitors.
@@ -145,9 +145,9 @@ With $t = 2$ traitors, we need at least $3t+1 = 7$ generals, which is exactly wh
 
 \section*{\texttt{\Large The Algorithm in Play}}
 
-\subsection*{\texttt{\large Round 2}}
+\subsection*{\texttt{\large Round 0}}
 \justifying
-In round 2 of the algorithm, the commander $\gen{0}$ sends commands to all lieutenants. Since the commander is a traitor, it can send different commands to different lieutenants. Figure~\ref{fig:traitor_commander_round_2} illustrates what happens in this round.
+In round 0 of the algorithm, the commander $\gen{0}$ sends commands to all lieutenants. Since the commander is a traitor, it can send different commands to different lieutenants. Figure~\ref{fig:traitor_commander_round_2} illustrates what happens in this round.
 
 
 % TikZ styles for Byzantine Generals figures
@@ -178,15 +178,15 @@ In round 2 of the algorithm, the commander $\gen{0}$ sends commands to all lieut
     \draw[messageR] (g0) -- (g5) node[midway, above, sloped, black]{\cmdR}; % G0 to G5 (Loyal)
     \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA}; % G0 to G6 (Loyal)
 \end{tikzpicture}
-\captionof{figure}{Round 2: Traitor Commander $\gen{0}$ sends inconsistent messages to lieutenants.}
+\captionof{figure}{In Round 0 the traitor commander $\gen{0}$ sends inconsistent messages to lieutenants.}
 \label{fig:traitor_commander_round_2}
 \end{center}
 
 \justifying
 As shown in the figure \ref{fig:traitor_commander_round_2}, the traitor commander $\gen{0}$ sends:
 \begin{itemize}
-    \item Retreat (R) to generals $\gen{1}$ (traitor), $\gen{3}$, and $\gen{5}$
-    \item Attack (A) to generals $\gen{2}$, $\gen{4}$, and $\gen{6}$
+    \item $Retreat$ (R) to generals $\gen{1}$ (traitor), $\gen{3}$, and $\gen{5}$
+    \item $Attack$ (A) to generals $\gen{2}$, $\gen{4}$, and $\gen{6}$
 \end{itemize}
 
 At this point, each lieutenant only knows what the commander told them directly. Table~\ref{tab:traitor_commander_round_1_values} represents this initial knowledge state, with each lieutenant recording the message they received on the diagonal.
@@ -219,22 +219,25 @@ At this point, each lieutenant only knows what the commander told them directly.
 
 \subsection*{\texttt{\large Round 1}}
 \justifying
-In this round each lieutenant takes turns acting as the commander for the round and tells all other lieutenants the message they received from the commander of the previous round (In this case Round 2 and the original commander $\gen{0}$). Following table covers all the iteration of Round 1.
+In this round each lieutenant takes turns acting as the commander for the round and tells all other lieutenants the message they received from the commander of the previous round (In this case Round 0 and the original commander $\gen{0}$). Table \ref{tab:round_1_iter} covers all the iteration of Round 1.
 
-When $\gen{1}$ acts as the commander (is the ``acting commander"),  $\gen{2}, \gen{3}, \gen{4}, \gen{5}, \gen{6}$ are the lieutenants. Similarly,
-
-When $\gen{2}$ acts as the commander (is the ``acting commander"),  $\gen{1}, \gen{3}, \gen{4}, \gen{5}, \gen{6}$ are the lieutenants.
-
-When $\gen{3}$ acts as the commander (is the ``acting commander"),  $\gen{1}, \gen{2}, \gen{4}, \gen{5}, \gen{6}$ are the lieutenants.
-
-When $\gen{4}$ acts as the commander (is the ``acting commander"),  $\gen{1}, \gen{2}, \gen{3}, \gen{5}, \gen{6}$ are the lieutenants.
-
-When $\gen{5}$ acts as the commander (is the ``acting commander"),  $\gen{1}, \gen{2}, \gen{3}, \gen{4}, \gen{6}$ are the lieutenants.
-
-And finally,
-
-When $\gen{6}$ acts as the commander (is the ``acting commander"),  $\gen{1}, \gen{2}, \gen{3}, \gen{4}, \gen{5}$ are the lieutenants.
-
+\noindent
+\begin{center}
+\begin{tabular}{ccc}
+\toprule
+\textbf{Iter No} & \textbf{Acting Commander} & \textbf{Lieutenants} \\
+\midrule
+1 & $\gen{1}$ & $\gen{2}, \gen{3}, \gen{4}, \gen{5}, \gen{6}$ \\
+2 & $\gen{2}$ & $\gen{1}, \gen{3}, \gen{4}, \gen{5}, \gen{6}$ \\
+3 & $\gen{3}$ & $\gen{1}, \gen{2}, \gen{4}, \gen{5}, \gen{6}$ \\
+4 & $\gen{4}$ & $\gen{1}, \gen{2}, \gen{3}, \gen{5}, \gen{6}$ \\
+5 & $\gen{5}$ & $\gen{1}, \gen{2}, \gen{3}, \gen{4}, \gen{6}$ \\
+6 & $\gen{6}$ & $\gen{1}, \gen{2}, \gen{3}, \gen{4}, \gen{5}$ \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Displays all the scenarios for the Round 1 of the example}
+\label{tab:round_1_iter}
+\end{center}
 
 
 Note that each lieutenant while acting as the commander does not send out any new commands, but instead just reports what they claim the commander of the previous round (In this case, the original commander $\gen{0}$) sent them.
@@ -292,16 +295,14 @@ Figure~\ref{fig:traitor_commander_traitor_round_2} illustrates a scenario where 
 \label{fig:traitor_commander_traitor_round_2}
 \end{center}
 
-\subsection*{\texttt{\large Round 0}}
-Note that Round 0 will take place for every iteration of Round 1 as the lieutenants of Round 1 take turn acting as the commander.
+\subsection*{\texttt{\large Round 2}}
+Round 2 will take place for every iteration of Round 1 as the lieutenants of Round 1 take turn acting as the commander.
 
-During the final round, Round 0, lieutenants of the round instead of acting as the commander simple gossip about what they received from the commander of the previous round. Each lieutenant go about and tell every other lieutenant what they received from the commander of the previous round.
+During the final round, Round 2, lieutenants of the round instead of acting as the commander simply gossip about what they received from the commander of the previous round ($\gen{1}$ in our example).
 
-Note that during this a traitor lieutenant can lie and send contradicting information about what they received from the commander of the previous round.
+Continuing the example instance we considered for Round 1 where $\gen{1}$ acts as the commander, we will now demonstrate what happened during the instance of Round 2 where $\gen{1}$ is the commander and $\gen{2}, \gen{3}, \gen{4}, \gen{5} \  \& \ \gen{6}$ are the lieutenants.
 
-Continuing the example instance we considered for the Round 1 where $\gen{1}$ acts as the commander, we will now demonstrate what happened during the instance of Round 0 where $\gen{1}$ is the commander and $\gen{2}, \gen{3}, \gen{4}, \gen{5} \  \& \ \gen{6}$ are the lieutenants.
-
-In this case the lieutenants $\gen{2}, \gen{3}, \gen{4}, \gen{5} \  \& \ \gen{6}$ just relay the message that they received from the commander $\gen{1}$. We visualize the process using Table \ref{tab:traitor_commander_round_0}
+As $m = 2$ for our example, Round 2 will act as the final round, so instead of taking turns acting as the commander in the recursive fashion like earlier rounds, lieutenants $\gen{2}, \gen{3}, \gen{4}, \gen{5} \  \& \ \gen{6}$ simply relay the message that they received from the commander $\gen{1}$. We visualize the process using Table \ref{tab:traitor_commander_round_0}
 
 \vspace{1em}
 
@@ -355,19 +356,20 @@ In this case the lieutenants $\gen{2}, \gen{3}, \gen{4}, \gen{5} \  \& \ \gen{6}
   &
   \adjustbox{valign=c}{\usebox{\mainTableBox}} % Use the saved (and measured) table, vertically centered
 \end{tabular}
-\captionof{table}{Round 0 gossip: Each cell shows the message the sender tells the receiver that it received from the commander, in this case $\gen{1}$. Yellow diagonal: sender's own message from $\gen{1}$. Grey cells: $\gen{1}$ is the acting commander and does not participate in consensus. Blue = Attack (A), Red = Retreat (R).}
+\captionof{table}{Round 2 gossip where each cell shows the message the sender tells the receiver that it received from the commander, in this case $\gen{1}$. Yellow diagonal: sender's own message from $\gen{1}$. Grey cells: $\gen{1}$ is the acting commander and does not participate in consensus. Blue = Attack (A), Red = Retreat (R).}
 \label{tab:traitor_commander_round_0}
 
+\vspace{1em}
 \justifying
-In our table visualization each lieutenant gossips (tells the other lieutenant what it received from the acting commander, $\gen{1}$ in this case) by filling out the rows, the reason why row headers are marked as $Senders$ and column headers are marked as $Receivers$. And thus the diagonals will simply contain the value that the lieutenant received from the commander.
+In our table visualization, the row headers are marked as $Senders$ and  the column headers are marked as $Receivers$, as each lieutenant gossips by filling out the rows (telling the other lieutenant what it received from the acting commander, $\gen{1}$ in this case). Thus, the diagonals will simply contain the value that the lieutenant received from the commander.
 
-Notice how each of the lieutenant in Round 0 being loyal, sends out the exact same message that it received from the acting commander $\gen{1}$
+Since each of the lieutenants in Round 2 is loyal, they just send out the exact same message that they received from the acting commander $\gen{1}$
 
 After the gossip is over each lieutenant takes the majority of all the messages that they received during the gossip and treats it as the truth. In Table \ref{tab:traitor_commander_round_0} a column represents the messages that a lieutenant receives from other lieutenants along with the message that they received from the acting commander $\gen{1}$. The values in the last row contains the majority of the messages in that column.
 
 \subsection*{\texttt{\large Back To Round 1}}
 
-The majority that was obtained from the Round 0 during the iteration of Round 1 (In our example, when $\gen{1}$ was acting as the commander) is then used by the lieutenants for the same iteration of Round 1. In the example that we consider the majority that was obained from Round 0  when the commander was $\gen{1}$ is then used by the lieutenants as the truth values for Round 1 when $\gen{1}$ was acting as the commander. We visualize it using Table \ref{tab:traitor_commander_round_2_summary}
+The majority that was obtained from the Round 2 during the iteration of Round 1 (In our example, when $\gen{1}$ was acting as the commander) is then used by the lieutenants for the same iteration of Round 1. In the example that we consider the majority that was obtained from Round 2  when the commander was $\gen{1}$ is then used by the lieutenants as the truth values for Round 1 when $\gen{1}$ was acting as the commander. We visualize it using Table \ref{tab:traitor_commander_round_2_summary}
 
 \vspace{0.7em}
 
@@ -391,17 +393,17 @@ The majority that was obtained from the Round 0 during the iteration of Round 1 
     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
-\captionof{table}{The majority obtained from Round 0, visualized using Table ~\ref{tab:traitor_commander_round_0} is now used as the truth in Round 1, which was visualized using Table ~\ref{fig:traitor_commander_round_2} to get this new Table that represents the knowledge after completion of an iteration of Round 1 when $\gen{1}$ completes actings as the commander.}
+\captionof{table}{The majority obtained from Round 2, visualized using Table ~\ref{tab:traitor_commander_round_0} is now used as the truth in Round 1, which was visualized using Table ~\ref{fig:traitor_commander_round_2} to get this new Table that represents the knowledge after the completion of an iteration of Round 1 when $\gen{1}$ completes acting as the commander.}
 \label{tab:traitor_commander_round_2_summary}
 
 \vspace{1em}
-To formalize, \textbf{\textit{The majority from round $O(m-1)$ is then used as the truth in $O(m)$}}.
+To formalize, \textbf{\textit{The majority from round $O(m)$ is then used as the truth in $O(m - 1)$}}.
 \vspace{1em}
 
 Like mentioned earlier, each lieutenant acts as the commander in Round 1 that will result in a similar round 0. where other lieutenants will gossip about the message that this ``new" commander sends them.
 
 \subsection*{\texttt{\large Second Iteration of Round 1}}
-For the sake of completeness of the example, we will now carry out the same process for the second iteration of Round 1 when $\gen{2}$ acts as the commander, visualized in Figure \ref{fig:traitor_commander_round_1_iter_2}
+For the sake of completeness of the example, we will now carry out the same process for the second iteration of Round 1 when $\gen{2}$ (a Loyal lieutenant) acts as the commander, visualized in Figure \ref{fig:traitor_commander_round_1_iter_2}
 
 % TikZ styles for Byzantine Generals figures
 \tikzstyle{general} = [circle, draw, minimum size=0.9cm, font=\small]
@@ -450,11 +452,11 @@ For the sake of completeness of the example, we will now carry out the same proc
     \end{scope}
 \end{tikzpicture}
 \label{fig:traitor_commander_round_1_iter_2}
-\captionof{figure}{Round 1 Iter 2: Just like previous example for this iteration, $\gen{2}$ acts as the commander for Round 1 and sends the message that it received from the previous commander, $\gen{0}$, The only difference is that $\gen{2}$ being loyal it sends the same message that it received from $\gen{0}$}
+\captionof{figure}{Round 1 where, $\gen{2}$ acts as the commander for and sends the message that it received from the previous commander, $\gen{0}$, The only difference is that $\gen{2}$ being loyal it sends the same message that it received from $\gen{0}$}
 \end{center}
 
-\subsection*{\texttt{\large Round 0 for Second Iteration of Round 1}}
-Again, just like previous example for this iteration, the rest of the lieutenants ($\gen{1}, \gen{3}, \gen{4}, \gen{5}\ \&\ \gen{6}$) will gossip about the message that they receive from commander $\gen{2}$. The only difference is that $\gen{1}$ being a traitor, it will send contradicting messages to other lieutenants, lying about what it received from $\gen{2}$ to create confusion. The instance is visualized using Table \ref{fig:traitor_commander_round_1_second_iter}
+\subsection*{\texttt{\large Round 2, Again}}
+Like in the previous iteration, the rest of the lieutenants ($\gen{1}, \gen{3}, \gen{4}, \gen{5}\ \&\ \gen{6}$) will gossip about the message that they receive from the new acting commander $\gen{2}$. The only difference is that $\gen{1}$ being a traitor, it will send contradicting messages to other lieutenants, lying about what it received from $\gen{2}$ to create confusion. The instance is visualized using Table \ref{fig:traitor_commander_round_1_second_iter}
 
 
 \sbox{\mainTableBox}{%
@@ -506,11 +508,11 @@ Again, just like previous example for this iteration, the rest of the lieutenant
   &
   \adjustbox{valign=c}{\usebox{\mainTableBox}} % Use the saved (and measured) table, vertically centered
 \end{tabular}
-\captionof{table}{Round 1 Iter 2, Round 0 gossip: Each cell shows the message the sender tells the receiver that it received from the commander, in this case $\gen{2}$. Yellow diagonal: sender's own message from $\gen{2}$. Grey cells: $\gen{2}$ is the acting commander and does not participate in consensus. Blue = Attack (A), Red = Retreat (R).}
+\captionof{table}{Round 0 gossip, again each cell shows the message the sender tells the receiver that it received from the commander, in this case $\gen{2}$. Yellow diagonal: sender's own message from $\gen{2}$. Grey cells: $\gen{2}$ is the acting commander and does not participate in consensus. Blue = Attack (A), Red = Retreat (R).}
 \label{fig:traitor_commander_round_1_second_iter}
 \end{center}
 
-Once again exactly like before, the lieutenants use the majority of the messages that they receive (represented by column of the table) and this majority is used by the lieutenants for the iteration if Round 1 when $\gen{2}$ was acting as the commander as visualized in Table \ref{tab:traitor_commander_round_1_iter_2}
+Once again exactly like before, the lieutenants use the majority of the messages that they receive (represented by column of the table) and this majority is used by the lieutenants for the iteration of Round 1 when $\gen{2}$ was acting as the commander as visualized in Table \ref{tab:traitor_commander_round_1_loyal_commander}
 
 
 \begin{center}
@@ -534,8 +536,8 @@ Once again exactly like before, the lieutenants use the majority of the messages
     & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
-\label{tab:traitor_commander_round_1_iter_2}
-\captionof{table}{The majority obtained from Round 0, visualized using Table ~\ref{tab:traitor_commander_round_1_iter_2} is now used as the truth in Round 1, which was visualized using Table ~\ref{fig:traitor_commander_round_2} to get this new Table that represents the knowledge after completion of an iteration of Round 1 when $\gen{2}$ completes actings as the commander.}
+\label{tab:traitor_commander_round_1_loyal_commander}
+\captionof{table}{The majority obtained from Round 0, visualized using Table \ref{fig:traitor_commander_round_1_second_iter} is now used as the truth in Round 1, which was visualized using Table \ref{fig:traitor_commander_round_2} to get this new Table that represents the knowledge after completion of an iteration of Round 1 when $\gen{2}$ completes actings as the commander.}
 \end{center}
 
 
@@ -586,7 +588,7 @@ To summarize, The traitor lieutenant $\gen{1}$ (who received $Retreat$ from $\ge
 
 Meanwhile, all loyal lieutenants honestly relay the commands they received. After this round, each lieutenant has:
 \begin{itemize}
-    \item Their original command from the commander (from Round 2)
+    \item Their original command from the commander, $\gen{0}$ from Round 0.
     \item Reports from all other lieutenants about what they claim to have received
 \end{itemize}
 
@@ -613,9 +615,9 @@ In this scenario:
 
 We'll execute the OM(2) algorithm for this scenario and observe how the loyal lieutenants achieve consensus despite the traitors' attempts to disrupt it.
 
-\subsection*{\texttt{\large Round 2}}
+\subsection*{\texttt{\large Round 0}}
 \justifying
-In Round 2, the loyal commander $\gen{0}$ sends the same command to all lieutenants. For this example, the commander issues an \textit{Attack} order. Figure~\ref{fig:loyal_commander_round_2} illustrates this initial, honest communication.
+In Round 0, the loyal commander $\gen{0}$ sends the same command to all lieutenants. For this example, the commander issues an \textit{Attack} order. Figure~\ref{fig:loyal_commander_round_2} illustrates this initial, honest communication.
 
 % TikZ styles for Byzantine Generals figures
 \tikzstyle{general} = [circle, draw, minimum size=0.9cm, font=\small]
@@ -645,7 +647,7 @@ In Round 2, the loyal commander $\gen{0}$ sends the same command to all lieutena
     \draw[messageA] (g0) -- (g5) node[midway, above, sloped, black]{\cmdA}; % G0 to G5
     \draw[messageA] (g0) -- (g6) node[midway, above, sloped, black]{\cmdA}; % G0 to G6
 \end{tikzpicture}
-\captionof{figure}{Round 2: Loyal Commander $\gen{0}$ sends a consistent $Attack$ message to all lieutenants.}
+\captionof{figure}{Round 0, Loyal Commander $\gen{0}$ sends a consistent $Attack$ message to all lieutenants.}
 \label{fig:loyal_commander_round_2}
 \end{center}
 
@@ -681,9 +683,8 @@ Because the commander is loyal, every lieutenant, including the traitors $\gen{1
 \justifying
 In Round 1, each lieutenant acts as the commander and relays the message they received from $\gen{0}$ to all other lieutenants. This is where the traitors make their move.
 
-\subsubsection*{\texttt{\large First Iteration of Round 1: A Traitor Speaks}}
 \justifying
-Let's consider the iteration where traitor $\gen{1}$ is the acting commander. Although $\gen{1}$ received an \textit{Attack} command, it will lie and tell every other lieutenant that it received a \textit{Retreat} command. Figure~\ref{fig:loyal_commander_traitor_round_1} illustrates this deception.
+Let's consider the iteration where traitor $\gen{1}$ is the acting commander. Although $\gen{1}$ received an $Attack$ command, it will lie and tell every other lieutenant that it received a $Retreat$ command. Figure~\ref{fig:loyal_commander_traitor_round_1} illustrates this deception.
 
 \begin{center}
 \begin{tikzpicture}[scale=1, transform shape]
@@ -723,13 +724,13 @@ Let's consider the iteration where traitor $\gen{1}$ is the acting commander. Al
             \draw[messageR] (g1) -- (g6a) node[midway, above, sloped, black]{\cmdR};
     \end{scope}
 \end{tikzpicture}
-\captionof{figure}{Round 1, Iteration 1: Traitor lieutenant $\gen{1}$, acting as commander, falsely reports receiving a \textit{Retreat} command.}
+\captionof{figure}{Traitor lieutenant $\gen{1}$, acting as commander, falsely reports receiving a \textit{Retreat} command from $\gen{0}$.}
 \label{fig:loyal_commander_traitor_round_1}
 \end{center}
 
-\subsubsection*{\texttt{\large Round 0 for First Iteration of Round 1}}
+\subsubsection*{\texttt{\large Round 2}}
 \justifying
-Now, the other lieutenants ($\gen{2}$, $\gen{3}$, $\gen{4}$, $\gen{5}$, $\gen{6}$) enter Round 0. They gossip about the command they just received from the acting commander, $\gen{1}$. As shown in Table~\ref{tab:loyal_commander_round_0_iter_1}, loyal lieutenants honestly relay the \textit{Retreat} message they received from $\gen{1}$. The other traitor, $\gen{4}$, also relays \textit{Retreat}, as collaborating traitors have no incentive to expose each other's lies to the loyal generals. Each lieutenant then takes the majority of the messages in their column. Since $\gen{1}$ sent a consistent lie, every other lieutenant's majority decision for this iteration is \textit{Retreat}.
+Now, the other lieutenants ($\gen{2}$, $\gen{3}$, $\gen{4}$, $\gen{5}$, $\gen{6}$) enter Round 2. They gossip about the command they just received from the acting commander, $\gen{1}$. As shown in Table~\ref{tab:loyal_commander_round_0_iter_1}, loyal lieutenants honestly relay the \textit{Retreat} message they received from $\gen{1}$. The other traitor, $\gen{4}$, also relays \textit{Retreat}, collaborating with the other traitor. Each lieutenant then takes the majority of the messages in their column. Since $\gen{1}$ sent a consistent lie, every other lieutenant's majority decision for this iteration is \textit{Retreat}.
 
 \sbox{\mainTableBox}{%
   \renewcommand{\arraystretch}{1.3}%
@@ -758,9 +759,11 @@ Now, the other lieutenants ($\gen{2}$, $\gen{3}$, $\gen{4}$, $\gen{5}$, $\gen{6}
   \adjustbox{valign=c}{\parbox[t][\mainTableHeight][c]{\labelcolwidth}{\centering \parbox[c][\senderLabelAreaHeight][c]{\labelcolwidth}{\centering\rotatebox[origin=c]{90}{\large\textbf{Sender}}}}} &
   \adjustbox{valign=c}{\usebox{\mainTableBox}}
 \end{tabular}
-\captionof{table}{Round 0 gossip when $\gen{1}$ is commander. All lieutenants report receiving `Retreat', leading to a unanimous (but false) majority.}
+\captionof{table}{Round 2 gossip when $\gen{1}$ is commander. All lieutenants report receiving $Retreat$, leading to a unanimous (but false) majority.}
 \label{tab:loyal_commander_round_0_iter_1}
 \end{center}
+
+The majority of the messages obtained from Round 2 for the iteration, is then used by the lieutenants for that iteration, illustrated in Table \ref{tab:loyal_commander_round_1_iter_1_summary}
 
 % Add the majority from Round 0 to the knowledge table for Round 1 (iteration for G1)
 \begin{center}
@@ -783,11 +786,11 @@ Now, the other lieutenants ($\gen{2}$, $\gen{3}$, $\gen{4}$, $\gen{5}$, $\gen{6}
      & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
-\captionof{table}{Majority from Round 0 (when $\gen{1}$ is acting commander) is incorporated into the knowledge table for Round 1. The first column (for $\gen{1}$) is the value received directly from the commander; the rest are the majorities from the previous Round 0.}
+\captionof{table}{Majority from Round 2 (when $\gen{1}$ is acting commander) is incorporated into the knowledge table for Round 1.}
 \label{tab:loyal_commander_round_1_iter_1_summary}
 \end{center}
 
-\subsubsection*{\texttt{\large Second Iteration of Round 1: A Loyal General Speaks}}
+\subsubsection*{\texttt{\large Round 1, Again}}
 \justifying
 Next, let's see what happens when a loyal lieutenant, $\gen{2}$, is the acting commander. $\gen{2}$ honestly reports the \textit{Attack} command it received from $\gen{0}$ to all other lieutenants, as shown in Figure \ref{fig:loyal_commander_loyal_round_1}.
 
@@ -829,13 +832,15 @@ Next, let's see what happens when a loyal lieutenant, $\gen{2}$, is the acting c
             \draw[messageA] (g2) -- (g6a) node[midway, above, sloped, black]{\cmdA};
     \end{scope}
 \end{tikzpicture}
-\captionof{figure}{Round 1, Iteration 2: Loyal lieutenant $\gen{2}$, acting as commander, honestly reports receiving an \textit{Attack} command.}
+\captionof{figure}{Loyal lieutenant $\gen{2}$, acting as commander, honestly reports receiving an $Attack$ command.}
 \label{fig:loyal_commander_loyal_round_1}
 \end{center}
 
-\subsubsection*{\texttt{\large Round 0 for Second Iteration of Round 1}}
+\subsubsection*{\texttt{\large Round 2, Again}}
 \justifying
-In the corresponding Round 0, the lieutenants of $\gen{2}$ gossip about the message they received. This time, the traitors $\gen{1}$ and $\gen{4}$ lie, claiming they received \textit{Retreat} from $\gen{2}$, while loyal lieutenants report truthfully. Table~\ref{tab:loyal_commander_round_0_iter_2} shows the messages exchanged. Each loyal lieutenant (columns for $\gen{3}, \gen{5}, \gen{6}$) receives two false \textit{Retreat} messages (from $\gen{1}$ and $\gen{4}$) but three honest \textit{Attack} messages (from $\gen{2}$ via the diagonal, and from $\gen{3}, \gen{5}, \gen{6}$). The majority for all loyal lieutenants is therefore \textit{Attack}.
+In the corresponding Round 2, the lieutenants of $\gen{2}$ gossip about the message they received. This time, the traitors $\gen{1}$ and $\gen{4}$ lie, claiming they received \textit{Retreat} from $\gen{2}$, while loyal lieutenants report truthfully. Table~\ref{tab:loyal_commander_round_0_iter_2} shows the messages exchanged. Each loyal lieutenant (columns for $\gen{3}, \gen{5}, \gen{6}$) receives two false $Retreat$ messages (from $\gen{1}$ and $\gen{4}$) but two honest $Attack$ messages from two of the remaining loyal lieutenants ($\gen{3}, \gen{5}, \gen{6}$). The majority for all loyal lieutenants is therefore \textit{Attack}. As illustrated in \ref{tab:loyal_commander_round_0_iter_2}
+
+
 
 \sbox{\mainTableBox}{%
   \renewcommand{\arraystretch}{1.3}%
@@ -864,9 +869,11 @@ In the corresponding Round 0, the lieutenants of $\gen{2}$ gossip about the mess
   \adjustbox{valign=c}{\parbox[t][\mainTableHeight][c]{\labelcolwidth}{\centering \parbox[c][\senderLabelAreaHeight][c]{\labelcolwidth}{\centering\rotatebox[origin=c]{90}{\large\textbf{Sender}}}}} &
   \adjustbox{valign=c}{\usebox{\mainTableBox}}
 \end{tabular}
-\captionof{table}{Round 0 gossip when $\gen{2}$ is commander. Traitors $\gen{1}$ and $\gen{4}$ send false reports, but loyal lieutenants form a majority for \textit{Attack}.}
+\captionof{table}{Round 2 gossip when $\gen{2}$ is commander. Traitors $\gen{1}$ and $\gen{4}$ send false reports, but loyal lieutenants form a majority for \textit{Attack}.}
 \label{tab:loyal_commander_round_0_iter_2}
 \end{center}
+
+The Round 1 knowledge table, after the completion of Round 0 where \gen{2} acts as the commander, would look like Table \ref{tab:loyal_commander_round_1_iter_2_summary}
 
 % Add the majority from Round 0 to the knowledge table for Round 1 (iteration for G2)
 \begin{center}
@@ -889,13 +896,13 @@ In the corresponding Round 0, the lieutenants of $\gen{2}$ gossip about the mess
      & & & & & \cellcolor{yellow!30}\textbf{\textcolor{blue}{\cmdA}} \\
     \hline
 \end{tabular}
-\captionof{table}{Majority from Round 0 (when $\gen{2}$ is acting commander) is incorporated into the knowledge table for Round 1. The second column (for $\gen{2}$) is the value received directly from the commander; the rest are the majorities from the previous Round 0.}
+\captionof{table}{Majority from Round 2 (when $\gen{2}$ is acting commander) is incorporated into the knowledge table for Round 1.}
 \label{tab:loyal_commander_round_1_iter_2_summary}
 \end{center}
 
 \subsection*{\texttt{\large Concluding the Example}}
 \justifying
-This process repeats for every lieutenant acting as commander in Round 1. Traitors $\gen{1}$ and $\gen{4}$ will always report receiving \textit{Retreat}. Loyal lieutenants $\gen{2}, \gen{3}, \gen{5}, \gen{6}$ will always honestly report receiving \textit{Attack}. After all iterations are complete, each lieutenant has a vector of values, one for each of the other lieutenants. Table~\ref{tab:loyal_commander_final_knowledge} shows the final state of knowledge. Each row represents the majority value determined from the corresponding Round 1 iteration.
+This process repeats for every lieutenant acting as commander in Round 1. Traitors $\gen{1}$ and $\gen{4}$ will always report receiving \textit{Retreat}. Loyal lieutenants $\gen{2}, \gen{3}, \gen{5}, \gen{6}$ will always honestly report receiving \textit{Attack}. After all iterations are complete, Table~\ref{tab:loyal_commander_final_knowledge} shows the final state of knowledge. Each row represents the majority value determined from the corresponding Round 1 iteration.
 
 \begin{center}
 \vspace{1em} % Add some vertical space
@@ -920,18 +927,12 @@ This process repeats for every lieutenant acting as commander in Round 1. Traito
     \hline
     \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!45}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} & \cellcolor{blue!75}\textbf{\textcolor{white}{A}} \\
 \end{tabular}
-\captionof{table}{Final knowledge table for all lieutenants after OM(2) completes, consistent with the earlier Round 1 knowledge tables. Each cell shows the majority value from the corresponding Round 0, and the diagonal shows the direct message from the commander.}
+\captionof{table}{Final Round 1 knowledge table for all lieutenants after OM(2) completes. Each cell shows the majority value from the corresponding Round 0, and the diagonal shows the direct message from the commander.}
 \label{tab:loyal_commander_final_knowledge}
 \end{center}
 
 \justifying
-Finally, each loyal lieutenant ($\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$) takes a majority vote of the values in its column from Table~\ref{tab:loyal_commander_final_knowledge}. Each of their columns contains:
-\begin{itemize}
-    \item One \textit{Attack} from the commander ($\gen{0}$)
-    \item Two \textit{Retreat} values (from traitors $\gen{1}$ and $\gen{4}$)
-    \item Four \textit{Attack} values (from loyal lieutenants $\gen{2}$, $\gen{3}$, $\gen{5}$, $\gen{6}$, and themselves)
-\end{itemize}
-The final tally for each loyal lieutenant is five \textit{Attack} messages to two \textit{Retreat} messages. As shown in the "Majority" row, they all correctly decide to \textit{Attack}.
+Finally, each loyal lieutenant ($\gen{2}$, $\gen{3}$, $\gen{5}$, and $\gen{6}$) takes a majority vote of the values in its column from Table~\ref{tab:loyal_commander_final_knowledge}. It is quite clear that the majority of messages for each loyal lieutenant (\gen{2}, \gen{3}, \gen{5}, \gen{6}) is same as the original command $Attach$ that the loyal commander \gen{0} sent. Although it irrelevant what the traitor lieutenants (\gen{1}\ \& \ \gen{4}) end up doing, the majority of the messages for them is consistent with the loyal lieutenants.
 
 This demonstrates that when the commander is loyal, OM(2) ensures all loyal lieutenants follow the commander's order, satisfying the \textbf{Validity} requirement. The traitors' lies are filtered out by the majority, and \textbf{Agreement} is achieved among the loyal generals.
 
